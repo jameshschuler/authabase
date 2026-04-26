@@ -36,11 +36,11 @@ A flexible, type-safe React authentication component library built with TypeScri
 ## Installation
 
 ```bash
-npm install @authabase/react-auth
+npm install @authabase/react
 # or
-yarn add @authabase/react-auth
+yarn add @authabase/react
 # or
-pnpm add @authabase/react-auth
+pnpm add @authabase/react
 ```
 
 ### Peer Dependencies
@@ -56,7 +56,7 @@ npm install react react-dom @fortawesome/react-fontawesome @fortawesome/fontawes
 Wrap your application with the `AuthProvider`:
 
 ```tsx
-import { AuthProvider } from '@authabase/react-auth'
+import { AuthProvider } from '@authabase/react'
 
 function App() {
   return (
@@ -82,7 +82,7 @@ function App() {
 ### 2. Use Auth Components
 
 ```tsx
-import { LoginForm, AuthContainer } from '@authabase/react-auth'
+import { LoginForm, AuthContainer } from '@authabase/react'
 
 function LoginPage() {
   return (
@@ -102,7 +102,7 @@ function LoginPage() {
 Use the `useAuth` hook anywhere in your app:
 
 ```tsx
-import { useAuth } from '@authabase/react-auth'
+import { useAuth } from '@authabase/react'
 
 function Profile() {
   const { user, isLoading, signOut } = useAuth()
@@ -392,7 +392,7 @@ npm run test:coverage    # Generate coverage report
 Full TypeScript support with proper type definitions:
 
 ```tsx
-import type { AuthUser, AuthConfig, LoginFormProps } from '@authabase/react-auth'
+import type { AuthUser, AuthConfig, LoginFormProps } from '@authabase/react'
 ```
 
 ## Contributing
