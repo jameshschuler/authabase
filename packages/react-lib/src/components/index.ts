@@ -2,6 +2,9 @@
 export { LoginForm } from './auth/LoginForm'
 export { SignupForm } from './auth/SignupForm'
 export { OTPForm } from './auth/OTPForm'
+export { MagicLinkForm } from './auth/MagicLinkForm'
+export { ForgotPasswordForm } from './auth/ForgotPasswordForm'
+export { ResetPasswordForm } from './auth/ResetPasswordForm'
 export { SocialAuthButton } from './auth/SocialAuthButton'
 
 // Inputs

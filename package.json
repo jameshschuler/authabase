@@ -12,6 +12,12 @@
         "build:all": "npm run build --workspaces",
         "type-check": "npm run type-check --workspace @authabase/react",
         "lint": "npm run lint --workspace @authabase/react",
-        "test": "npm run test --workspace @authabase/react"
+        "test": "npm run test --workspace @authabase/react",
+        "changeset": "changeset",
+        "version-packages": "changeset version",
+        "release": "npm run build --workspace @authabase/react && changeset publish"
+    },
+    "devDependencies": {
+        "@changesets/cli": "^2.29.7"
     }
 }

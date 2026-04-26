@@ -5,11 +5,14 @@ import {
   LoginForm,
   SignupForm,
   OTPForm,
+  MagicLinkForm,
+  ForgotPasswordForm,
+  ResetPasswordForm,
   AuthContainer,
   type AuthConfig,
 } from '@authabase/react'
 
-type AuthTab = 'login' | 'signup' | 'otp'
+type AuthTab = 'login' | 'signup' | 'otp' | 'magic-link' | 'forgot-password' | 'reset-password'
 
 type EnabledMethods = NonNullable<AuthConfig['enabledMethods']>
 
@@ -59,6 +62,21 @@ function AuthDemo({ demoState }: { demoState: DemoState }) {
         id: 'otp' as AuthTab,
         label: 'OTP',
         enabled: Boolean(demoState.enabledMethods.otp),
+      },
+      {
+        id: 'magic-link' as AuthTab,
+        label: 'Magic Link',
+        enabled: Boolean(demoState.enabledMethods.email),
+      },
+      {
+        id: 'forgot-password' as AuthTab,
+        label: 'Forgot Password',
+        enabled: Boolean(demoState.enabledMethods.email),
+      },
+      {
+        id: 'reset-password' as AuthTab,
+        label: 'Reset Password',
+        enabled: Boolean(demoState.enabledMethods.email),
       },
     ],
     [demoState.enabledMethods]
@@ -115,6 +133,30 @@ function AuthDemo({ demoState }: { demoState: DemoState }) {
           onError={(error) => alert(`Error: ${error.message}`)}
           enabledMethods={demoState.otpMethods}
           defaultMethod={demoState.otpMethods.phone && !demoState.otpMethods.email ? 'phone' : 'email'}
+        />
+      )}
+
+      {tab === 'magic-link' && (
+        <MagicLinkForm
+          onSuccess={(email) => alert(`Magic link sent to ${email}. Check your inbox!`)}
+          onError={(error) => alert(`Error: ${error.message}`)}
+          redirectTo={window.location.origin}
+        />
+      )}
+
+      {tab === 'forgot-password' && (
+        <ForgotPasswordForm
+          onSuccess={(email) => alert(`Reset link sent to ${email}. Check your inbox!`)}
+          onError={(error) => alert(`Error: ${error.message}`)}
+          redirectTo={window.location.origin}
+        />
+      )}
+
+      {tab === 'reset-password' && (
+        <ResetPasswordForm
+          onSuccess={(user) => alert(`Password updated for ${user.email || 'your account'}`)}
+          onError={(error) => alert(`Error: ${error.message}`)}
+          minPasswordLength={demoState.minPasswordLength}
         />
       )}
     </AuthContainer>

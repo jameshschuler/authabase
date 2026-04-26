@@ -41,6 +41,24 @@ export interface LoginFormProps {
   showSignupLink?: boolean
 }
 
+export interface MagicLinkFormProps {
+  onSuccess?: (email: string) => void
+  onError?: (error: Error) => void
+  redirectTo?: string
+}
+
+export interface ForgotPasswordFormProps {
+  onSuccess?: (email: string) => void
+  onError?: (error: Error) => void
+  redirectTo?: string
+}
+
+export interface ResetPasswordFormProps {
+  onSuccess?: (user: AuthUser) => void
+  onError?: (error: Error) => void
+  minPasswordLength?: number
+}
+
 export interface SignupFormProps {
   onSuccess?: (user: AuthUser) => void
   onError?: (error: Error) => void
