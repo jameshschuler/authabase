@@ -1,7 +1,7 @@
 {
     "name": "@authabase/react",
     "type": "module",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "Reusable React auth components with Supabase integration, shadcn UI, and configurable auth methods",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
