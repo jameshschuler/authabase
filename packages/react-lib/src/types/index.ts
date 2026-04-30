@@ -57,6 +57,7 @@ export interface ResetPasswordFormProps {
   onSuccess?: (user: AuthUser) => void
   onError?: (error: Error) => void
   minPasswordLength?: number
+  passwordMismatchText?: string
 }
 
 export interface SignupFormProps {
@@ -64,12 +65,15 @@ export interface SignupFormProps {
   onError?: (error: Error) => void
   showLoginLink?: boolean
   minPasswordLength?: number
+  passwordMismatchText?: string
 }
 
 export interface OTPFormProps {
   onSuccess?: (user: AuthUser) => void
   onError?: (error: Error) => void
   phoneNumber?: string
+  hintText?: string
+  sendOtpText?: string
   defaultMethod?: 'email' | 'phone'
   enabledMethods?: {
     email?: boolean

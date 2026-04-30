@@ -20,6 +20,9 @@ interface DemoState {
   useSupabaseCredentials: boolean
   enabledMethods: EnabledMethods
   minPasswordLength: number
+  passwordMismatchText: string
+  otpHintText: string
+  otpSendText: string
   otpMethods: {
     email: boolean
     phone: boolean
@@ -122,6 +125,7 @@ function AuthDemo({ demoState }: { demoState: DemoState }) {
           onError={(error) => alert(`Error: ${error.message}`)}
           showLoginLink={demoState.showLoginLink}
           minPasswordLength={demoState.minPasswordLength}
+          passwordMismatchText={demoState.passwordMismatchText}
         />
       )}
 
@@ -132,7 +136,11 @@ function AuthDemo({ demoState }: { demoState: DemoState }) {
           }
           onError={(error) => alert(`Error: ${error.message}`)}
           enabledMethods={demoState.otpMethods}
-          defaultMethod={demoState.otpMethods.phone && !demoState.otpMethods.email ? 'phone' : 'email'}
+          hintText={demoState.otpHintText}
+          sendOtpText={demoState.otpSendText}
+          defaultMethod={
+            demoState.otpMethods.phone && !demoState.otpMethods.email ? 'phone' : 'email'
+          }
         />
       )}
 
@@ -157,6 +165,7 @@ function AuthDemo({ demoState }: { demoState: DemoState }) {
           onSuccess={(user) => alert(`Password updated for ${user.email || 'your account'}`)}
           onError={(error) => alert(`Error: ${error.message}`)}
           minPasswordLength={demoState.minPasswordLength}
+          passwordMismatchText={demoState.passwordMismatchText}
         />
       )}
     </AuthContainer>
@@ -250,6 +259,9 @@ function DemoControls({
             phone: true,
           },
           minPasswordLength: 8,
+          passwordMismatchText: 'Passwords do not match',
+          otpHintText: 'Use E.164 format, for example +14155552671',
+          otpSendText: 'Send OTP',
         }
       }
 
@@ -269,6 +281,9 @@ function DemoControls({
             phone: true,
           },
           minPasswordLength: 8,
+          passwordMismatchText: 'Passwords do not match',
+          otpHintText: 'Use E.164 format, for example +14155552671',
+          otpSendText: 'Send OTP',
         }
       }
 
@@ -288,6 +303,9 @@ function DemoControls({
             phone: true,
           },
           minPasswordLength: 8,
+          passwordMismatchText: 'Passwords do not match',
+          otpHintText: 'Use E.164 format, for example +14155552671',
+          otpSendText: 'Send OTP',
         }
       }
 
@@ -301,6 +319,9 @@ function DemoControls({
           phone: true,
         },
         minPasswordLength: 8,
+        passwordMismatchText: 'Passwords do not match',
+        otpHintText: 'Use E.164 format, for example +14155552671',
+        otpSendText: 'Send OTP',
       }
     })
   }
@@ -325,7 +346,11 @@ function DemoControls({
       <h2 className="mb-3 text-sm font-semibold text-foreground">Demo Controls</h2>
 
       <div className="mb-4 flex flex-wrap gap-2">
-        <button type="button" className={presetButtonClass('all')} onClick={() => applyPreset('all')}>
+        <button
+          type="button"
+          className={presetButtonClass('all')}
+          onClick={() => applyPreset('all')}
+        >
           All Methods
         </button>
         <button
@@ -498,6 +523,54 @@ function DemoControls({
             />
           </div>
         </div>
+
+        <div className="flex flex-col gap-1 text-sm text-foreground sm:col-span-2 lg:col-span-3">
+          <label htmlFor="passwordMismatchText">Password Mismatch Text</label>
+          <input
+            id="passwordMismatchText"
+            type="text"
+            value={demoState.passwordMismatchText}
+            onChange={(e) =>
+              setDemoState((prev) => ({
+                ...prev,
+                passwordMismatchText: e.target.value,
+              }))
+            }
+            className="rounded border border-border bg-background px-3 py-2 text-sm"
+          />
+        </div>
+
+        <div className="flex flex-col gap-1 text-sm text-foreground sm:col-span-2 lg:col-span-3">
+          <label htmlFor="otpHintText">OTP Hint Text</label>
+          <input
+            id="otpHintText"
+            type="text"
+            value={demoState.otpHintText}
+            onChange={(e) =>
+              setDemoState((prev) => ({
+                ...prev,
+                otpHintText: e.target.value,
+              }))
+            }
+            className="rounded border border-border bg-background px-3 py-2 text-sm"
+          />
+        </div>
+
+        <div className="flex flex-col gap-1 text-sm text-foreground sm:col-span-2 lg:col-span-3">
+          <label htmlFor="otpSendText">OTP Button Text</label>
+          <input
+            id="otpSendText"
+            type="text"
+            value={demoState.otpSendText}
+            onChange={(e) =>
+              setDemoState((prev) => ({
+                ...prev,
+                otpSendText: e.target.value,
+              }))
+            }
+            className="rounded border border-border bg-background px-3 py-2 text-sm"
+          />
+        </div>
       </div>
 
       <div className="mt-3 flex gap-2">
@@ -513,6 +586,9 @@ function DemoControls({
                 phone: true,
               },
               minPasswordLength: 8,
+              passwordMismatchText: 'Passwords do not match',
+              otpHintText: 'Use E.164 format, for example +14155552671',
+              otpSendText: 'Send OTP',
               showSignupLink: true,
               showLoginLink: true,
             })
@@ -530,6 +606,9 @@ export default function App() {
     useSupabaseCredentials: false,
     enabledMethods: { ...defaultEnabledMethods },
     minPasswordLength: 8,
+    passwordMismatchText: 'Passwords do not match',
+    otpHintText: 'Use E.164 format, for example +14155552671',
+    otpSendText: 'Send OTP',
     otpMethods: {
       email: true,
       phone: true,
@@ -539,8 +618,8 @@ export default function App() {
   })
 
   const authConfig: AuthConfig = {
-    supabaseUrl: demoState.useSupabaseCredentials ? (import.meta.env.VITE_SUPABASE_URL || '') : '',
-    supabaseKey: demoState.useSupabaseCredentials ? (import.meta.env.VITE_SUPABASE_KEY || '') : '',
+    supabaseUrl: demoState.useSupabaseCredentials ? import.meta.env.VITE_SUPABASE_URL || '' : '',
+    supabaseKey: demoState.useSupabaseCredentials ? import.meta.env.VITE_SUPABASE_KEY || '' : '',
     redirectUrl: window.location.origin,
     enabledMethods: demoState.enabledMethods,
     onAuthSuccess: () => {

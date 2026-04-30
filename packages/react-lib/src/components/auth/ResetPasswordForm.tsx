@@ -14,6 +14,7 @@ export function ResetPasswordForm({
   onSuccess,
   onError,
   minPasswordLength = 8,
+  passwordMismatchText = 'Passwords do not match',
 }: ResetPasswordFormProps) {
   const { supabase } = useAuth()
   const minLength = Math.max(1, minPasswordLength)
@@ -28,7 +29,7 @@ export function ResetPasswordForm({
       confirmPassword: z.string(),
     })
     .refine((data) => data.password === data.confirmPassword, {
-      message: 'Passwords do not match',
+      message: passwordMismatchText,
       path: ['confirmPassword'],
     })
 
@@ -43,9 +44,24 @@ export function ResetPasswordForm({
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    const nextFormData = { ...formData, [name]: value }
+    setFormData(nextFormData)
+
+    if (nextFormData.confirmPassword && nextFormData.password !== nextFormData.confirmPassword) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: undefined,
+        confirmPassword: passwordMismatchText,
+      }))
+      return
+    }
+
     if (errors[name as keyof ResetPasswordFormData]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }))
+    }
+
+    if (errors.confirmPassword) {
+      setErrors((prev) => ({ ...prev, confirmPassword: undefined }))
     }
   }
 
@@ -57,6 +73,11 @@ export function ResetPasswordForm({
 
     if (!supabase) {
       setGeneralError('Supabase client not initialized')
+      return
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setErrors({ confirmPassword: passwordMismatchText })
       return
     }
 
@@ -78,7 +99,9 @@ export function ResetPasswordForm({
 
       if (error) throw error
 
-      setSuccessMessage('Password updated successfully. You can now sign in with your new password.')
+      setSuccessMessage(
+        'Password updated successfully. You can now sign in with your new password.'
+      )
 
       const user: AuthUser = {
         id: data.user?.id ?? '',
@@ -99,7 +122,9 @@ export function ResetPasswordForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {generalError && (
-        <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{generalError}</div>
+        <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+          {generalError}
+        </div>
       )}
 
       {successMessage && (

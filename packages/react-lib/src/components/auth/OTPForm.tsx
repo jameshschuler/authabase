@@ -12,6 +12,8 @@ export function OTPForm({
   onSuccess,
   onError,
   phoneNumber,
+  hintText = 'Use E.164 format, for example +14155552671',
+  sendOtpText = 'Send OTP',
   defaultMethod = 'email',
   enabledMethods,
 }: OTPFormProps) {
@@ -236,16 +238,14 @@ export function OTPForm({
                 disabled={isLoading}
                 required
               />
-              <p className="text-xs text-muted-foreground">
-                Use E.164 format, for example +14155552671
-              </p>
+              <p className="text-xs text-muted-foreground">{hintText}</p>
             </div>
           )}
 
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading
               ? `Sending OTP to ${deliveryMethod === 'email' ? 'email' : 'phone'}...`
-              : 'Send OTP'}
+              : sendOtpText}
           </Button>
         </>
       ) : (

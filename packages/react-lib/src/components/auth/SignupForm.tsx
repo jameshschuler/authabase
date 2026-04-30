@@ -18,6 +18,7 @@ export function SignupForm({
   onError,
   showLoginLink,
   minPasswordLength = 8,
+  passwordMismatchText = 'Passwords do not match',
 }: SignupFormProps) {
   const { supabase, enabledMethods } = useAuth()
   const minLength = Math.max(1, minPasswordLength)
@@ -33,7 +34,7 @@ export function SignupForm({
       confirmPassword: z.string(),
     })
     .refine((data) => data.password === data.confirmPassword, {
-      message: 'Passwords do not match',
+      message: passwordMismatchText,
       path: ['confirmPassword'],
     })
 
@@ -49,9 +50,24 @@ export function SignupForm({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
+    const nextFormData = { ...formData, [name]: value }
+    setFormData(nextFormData)
+
+    if (nextFormData.confirmPassword && nextFormData.password !== nextFormData.confirmPassword) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: undefined,
+        confirmPassword: passwordMismatchText,
+      }))
+      return
+    }
+
     if (errors[name as keyof SignupFormData]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }))
+    }
+
+    if (errors.confirmPassword) {
+      setErrors((prev) => ({ ...prev, confirmPassword: undefined }))
     }
   }
 
@@ -63,6 +79,11 @@ export function SignupForm({
 
     if (!supabase) {
       setGeneralError('Supabase client not initialized')
+      return
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      setErrors({ confirmPassword: passwordMismatchText })
       return
     }
 
