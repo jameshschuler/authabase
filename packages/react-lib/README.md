@@ -145,6 +145,30 @@ One-Time Password authentication flow.
 <OTPForm onSuccess={(user) => {}} onError={(error) => {}} />
 ```
 
+### ForgotPasswordForm
+
+Sends a password reset email to the user.
+
+```tsx
+<ForgotPasswordForm onSuccess={() => {}} onError={(error) => {}} />
+```
+
+### MagicLinkForm
+
+Passwordless sign-in via a magic link sent to the user's email.
+
+```tsx
+<MagicLinkForm onSuccess={() => {}} onError={(error) => {}} />
+```
+
+### ResetPasswordForm
+
+Allows the user to set a new password after clicking a reset link.
+
+```tsx
+<ResetPasswordForm onSuccess={(user) => {}} onError={(error) => {}} />
+```
+
 ### SocialAuthButton
 
 Standalone OAuth button for Google or GitHub.
@@ -397,7 +421,11 @@ import type { AuthUser, AuthConfig, LoginFormProps } from '@authabase/react'
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please read [CONTRIBUTING.md](../../CONTRIBUTING.md) for guidelines on how to get started, branch naming, testing requirements, and the PR process.
+
+## License
+
+ISC — see [LICENSE](../../LICENSE) for details.
 
 ## License
 
