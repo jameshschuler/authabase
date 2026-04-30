@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, type ReactNode, useMemo
 import { createClient } from '@supabase/supabase-js'
 import type { AuthContextType, AuthConfig, AuthUser } from '../types'
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 interface AuthProviderProps {
   config: AuthConfig
@@ -42,7 +42,11 @@ export function AuthProvider({ config, children }: AuthProviderProps) {
     if (!supabase) {
       // If no valid Supabase config, just finish loading without auth
       setIsLoading(false)
-      setError(new Error('Supabase credentials not configured. Please provide VITE_SUPABASE_URL and VITE_SUPABASE_KEY environment variables.'))
+      setError(
+        new Error(
+          'Supabase credentials not configured. Please provide VITE_SUPABASE_URL and VITE_SUPABASE_KEY environment variables.'
+        )
+      )
       return
     }
 
