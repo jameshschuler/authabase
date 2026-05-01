@@ -9,6 +9,9 @@ const meta: Meta<typeof ForgotPasswordForm> = {
   argTypes: {
     onSuccess: { action: 'onSuccess' },
     onError: { action: 'onError' },
+    onSubmitStart: { action: 'onSubmitStart' },
+    onSubmitComplete: { action: 'onSubmitComplete' },
+    onValidationError: { action: 'onValidationError' },
     redirectTo: { control: 'text' },
   },
 }
@@ -16,14 +19,39 @@ const meta: Meta<typeof ForgotPasswordForm> = {
 export default meta
 type Story = StoryObj<typeof ForgotPasswordForm>
 
+const wrap = (story: React.ReactNode) => (
+  <AuthContainer
+    title="Forgot your password?"
+    subtitle="Enter your email and we'll send a reset link"
+  >
+    {story}
+  </AuthContainer>
+)
+
 export const Default: Story = {
   args: {},
-  render: (args) => (
-    <AuthContainer
-      title="Forgot your password?"
-      subtitle="Enter your email and we'll send a reset link"
-    >
-      <ForgotPasswordForm {...args} />
-    </AuthContainer>
-  ),
+  render: (args) => wrap(<ForgotPasswordForm {...args} />),
+}
+
+export const CustomCopy: Story = {
+  args: {
+    copy: {
+      emailLabel: 'Account Email',
+      emailPlaceholder: 'you@example.com',
+      submitButton: 'Email me a reset link',
+      loadingButton: 'Sending...',
+      successMessage: 'Done! Check your inbox for a reset link.',
+    },
+  },
+  render: (args) => wrap(<ForgotPasswordForm {...args} />),
+}
+
+export const WithErrorMapping: Story = {
+  args: {
+    mapError: (err) => {
+      if (err.message.includes('not found')) return 'No account found with that email address.'
+      return err.message
+    },
+  },
+  render: (args) => wrap(<ForgotPasswordForm {...args} />),
 }

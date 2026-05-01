@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { Button } from '../ui/Button'
 import { EmailInput } from '../inputs/EmailInput'
 import { PasswordInput } from '../inputs/PasswordInput'
@@ -13,28 +13,58 @@ type SignupFormData = {
   confirmPassword: string
 }
 
+const DEFAULT_COPY = {
+  emailLabel: 'Email',
+  emailPlaceholder: 'Enter your email',
+  passwordLabel: 'Password',
+  confirmPasswordLabel: 'Confirm Password',
+  confirmPasswordPlaceholder: 'Confirm your password',
+  submitButton: 'Sign Up',
+  loadingButton: 'Creating account...',
+  successMessage: 'Sign up successful! Check your email for verification.',
+  orContinueWith: 'Or continue with',
+  loginPrompt: 'Already have an account?',
+  loginLink: 'Sign in',
+  noMethodsMessage: 'No sign-up methods are enabled in the current auth configuration.',
+  passwordMismatch: 'Passwords do not match',
+}
+
 export function SignupForm({
   onSuccess,
   onError,
   showLoginLink,
+  onLoginClick,
+  loginHref = '#login',
   minPasswordLength = 8,
-  passwordMismatchText = 'Passwords do not match',
+  requireUppercase = true,
+  requireLowercase = true,
+  requireNumber = true,
+  requireSpecialChar = false,
+  onSubmitStart,
+  onSubmitComplete,
+  onValidationError,
+  mapError,
+  copy: copyProp,
 }: SignupFormProps) {
   const { supabase, enabledMethods } = useAuth()
+  const copy = { ...DEFAULT_COPY, ...copyProp }
   const minLength = Math.max(1, minPasswordLength)
   const signupSchema = z
     .object({
       email: z.string().email('Invalid email address'),
-      password: z
-        .string()
-        .min(minLength, `Password must be at least ${minLength} characters`)
-        .regex(/[a-z]/, 'Password must contain lowercase letters')
-        .regex(/[A-Z]/, 'Password must contain uppercase letters')
-        .regex(/\d/, 'Password must contain numbers'),
+      password: (() => {
+        let s = z.string().min(minLength, `Password must be at least ${minLength} characters`)
+        if (requireLowercase) s = s.regex(/[a-z]/, 'Password must contain lowercase letters')
+        if (requireUppercase) s = s.regex(/[A-Z]/, 'Password must contain uppercase letters')
+        if (requireNumber) s = s.regex(/\d/, 'Password must contain numbers')
+        if (requireSpecialChar)
+          s = s.regex(/[^a-zA-Z0-9]/, 'Password must contain a special character')
+        return s
+      })(),
       confirmPassword: z.string(),
     })
     .refine((data) => data.password === data.confirmPassword, {
-      message: passwordMismatchText,
+      message: copy.passwordMismatch,
       path: ['confirmPassword'],
     })
 
@@ -48,6 +78,9 @@ export function SignupForm({
   const [generalError, setGeneralError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
+  const emailRef = useRef<HTMLInputElement>(null)
+  const passwordRef = useRef<HTMLInputElement>(null)
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     const nextFormData = { ...formData, [name]: value }
@@ -57,7 +90,7 @@ export function SignupForm({
       setErrors((prev) => ({
         ...prev,
         [name]: undefined,
-        confirmPassword: passwordMismatchText,
+        confirmPassword: copy.passwordMismatch,
       }))
       return
     }
@@ -83,11 +116,10 @@ export function SignupForm({
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setErrors({ confirmPassword: passwordMismatchText })
+      setErrors({ confirmPassword: copy.passwordMismatch })
       return
     }
 
-    // Validate form
     const result = signupSchema.safeParse(formData)
     if (!result.success) {
       const formErrors: Partial<SignupFormData> = {}
@@ -95,9 +127,13 @@ export function SignupForm({
         formErrors[issue.path[0] as keyof SignupFormData] = issue.message as any
       })
       setErrors(formErrors)
+      onValidationError?.(formErrors as Record<string, string>)
+      if (formErrors.email) emailRef.current?.focus()
+      else if (formErrors.password) passwordRef.current?.focus()
       return
     }
 
+    onSubmitStart?.()
     setIsLoading(true)
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -107,7 +143,7 @@ export function SignupForm({
 
       if (error) throw error
 
-      setSuccessMessage('Sign up successful! Check your email for verification.')
+      setSuccessMessage(copy.successMessage)
       const user: AuthUser = {
         id: data.user?.id || '',
         email: data.user?.email,
@@ -116,47 +152,61 @@ export function SignupForm({
       onSuccess?.(user)
     } catch (error) {
       const err = error instanceof Error ? error : new Error('Failed to sign up')
-      setGeneralError(err.message)
+      const message = mapError ? mapError(err) : err.message
+      setGeneralError(message)
       onError?.(err)
     } finally {
       setIsLoading(false)
+      onSubmitComplete?.()
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6" noValidate>
       {generalError && (
-        <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+        <div
+          role="alert"
+          aria-live="polite"
+          className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
+        >
           {generalError}
         </div>
       )}
 
       {successMessage && (
-        <div className="rounded-md bg-green-50 p-3 text-sm text-green-800">{successMessage}</div>
+        <div
+          role="status"
+          aria-live="polite"
+          className="rounded-md bg-green-50 p-3 text-sm text-green-800"
+        >
+          {successMessage}
+        </div>
       )}
 
       {enabledMethods.email && (
         <>
           <EmailInput
+            ref={emailRef}
             id="email"
             name="email"
-            placeholder="Enter your email"
+            placeholder={copy.emailPlaceholder}
             value={formData.email}
             onChange={handleInputChange}
             error={errors.email}
-            label="Email"
+            label={copy.emailLabel}
             disabled={isLoading}
             required
           />
 
           <PasswordInput
+            ref={passwordRef}
             id="password"
             name="password"
             placeholder={`At least ${minLength} characters`}
             value={formData.password}
             onChange={handleInputChange}
             error={errors.password}
-            label="Password"
+            label={copy.passwordLabel}
             disabled={isLoading}
             showStrengthIndicator
             required
@@ -165,17 +215,17 @@ export function SignupForm({
           <PasswordInput
             id="confirmPassword"
             name="confirmPassword"
-            placeholder="Confirm your password"
+            placeholder={copy.confirmPasswordPlaceholder}
             value={formData.confirmPassword}
             onChange={handleInputChange}
             error={errors.confirmPassword}
-            label="Confirm Password"
+            label={copy.confirmPasswordLabel}
             disabled={isLoading}
             required
           />
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Creating account...' : 'Sign Up'}
+          <Button type="submit" className="w-full" disabled={isLoading} aria-busy={isLoading}>
+            {isLoading ? copy.loadingButton : copy.submitButton}
           </Button>
         </>
       )}
@@ -183,12 +233,12 @@ export function SignupForm({
       {(enabledMethods.google || enabledMethods.github) && (
         <>
           {enabledMethods.email && (
-            <div className="relative">
+            <div className="relative" aria-hidden="true">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                <span className="bg-card px-2 text-muted-foreground">{copy.orContinueWith}</span>
               </div>
             </div>
           )}
@@ -205,17 +255,25 @@ export function SignupForm({
       )}
 
       {!enabledMethods.email && !enabledMethods.google && !enabledMethods.github && (
-        <p className="text-sm text-muted-foreground">
-          No sign-up methods are enabled in the current auth configuration.
-        </p>
+        <p className="text-sm text-muted-foreground">{copy.noMethodsMessage}</p>
       )}
 
       {showLoginLink && (
         <p className="text-center text-sm text-muted-foreground">
-          Already have an account?{' '}
-          <a href="#login" className="font-medium text-primary hover:underline">
-            Sign in
-          </a>
+          {copy.loginPrompt}{' '}
+          {onLoginClick ? (
+            <button
+              type="button"
+              onClick={onLoginClick}
+              className="font-medium text-primary hover:underline"
+            >
+              {copy.loginLink}
+            </button>
+          ) : (
+            <a href={loginHref} className="font-medium text-primary hover:underline">
+              {copy.loginLink}
+            </a>
+          )}
         </p>
       )}
     </form>

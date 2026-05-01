@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { Button } from '../ui/Button'
 import { EmailInput } from '../inputs/EmailInput'
 import { PasswordInput } from '../inputs/PasswordInput'
@@ -8,14 +8,43 @@ import { z } from 'zod'
 import type { LoginFormProps, AuthUser } from '../../types'
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  email: z.email('Invalid email address'),
   password: z.string().min(1, 'Password is required'),
 })
 
 type LoginFormData = z.infer<typeof loginSchema>
 
-export function LoginForm({ onSuccess, onError, showSignupLink }: LoginFormProps) {
+const DEFAULT_COPY = {
+  emailLabel: 'Email',
+  emailPlaceholder: 'Enter your email',
+  passwordLabel: 'Password',
+  passwordPlaceholder: 'Enter your password',
+  submitButton: 'Sign In',
+  loadingButton: 'Signing in...',
+  orContinueWith: 'Or continue with',
+  signupPrompt: "Don't have an account?",
+  signupLink: 'Sign up',
+  forgotPasswordLink: 'Forgot password?',
+  noMethodsMessage: 'No sign-in methods are enabled in the current auth configuration.',
+}
+
+export function LoginForm({
+  onSuccess,
+  onError,
+  showSignupLink,
+  onSignupClick,
+  signupHref = '#signup',
+  onForgotPasswordClick,
+  forgotPasswordHref = '#forgot-password',
+  showForgotPasswordLink,
+  onSubmitStart,
+  onSubmitComplete,
+  onValidationError,
+  mapError,
+  copy: copyProp,
+}: LoginFormProps) {
   const { supabase, enabledMethods } = useAuth()
+  const copy = { ...DEFAULT_COPY, ...copyProp }
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: '',
@@ -23,6 +52,9 @@ export function LoginForm({ onSuccess, onError, showSignupLink }: LoginFormProps
   const [errors, setErrors] = useState<Partial<LoginFormData>>({})
   const [isLoading, setIsLoading] = useState(false)
   const [generalError, setGeneralError] = useState<string | null>(null)
+
+  const emailRef = useRef<HTMLInputElement>(null)
+  const passwordRef = useRef<HTMLInputElement>(null)
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -42,7 +74,6 @@ export function LoginForm({ onSuccess, onError, showSignupLink }: LoginFormProps
       return
     }
 
-    // Validate form
     const result = loginSchema.safeParse(formData)
     if (!result.success) {
       const formErrors: Partial<LoginFormData> = {}
@@ -50,9 +81,13 @@ export function LoginForm({ onSuccess, onError, showSignupLink }: LoginFormProps
         formErrors[issue.path[0] as keyof LoginFormData] = issue.message as any
       })
       setErrors(formErrors)
+      onValidationError?.(formErrors as Record<string, string>)
+      if (formErrors.email) emailRef.current?.focus()
+      else if (formErrors.password) passwordRef.current?.focus()
       return
     }
 
+    onSubmitStart?.()
     setIsLoading(true)
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -70,17 +105,23 @@ export function LoginForm({ onSuccess, onError, showSignupLink }: LoginFormProps
       onSuccess?.(user)
     } catch (error) {
       const err = error instanceof Error ? error : new Error('Failed to sign in')
-      setGeneralError(err.message)
+      const message = mapError ? mapError(err) : err.message
+      setGeneralError(message)
       onError?.(err)
     } finally {
       setIsLoading(false)
+      onSubmitComplete?.()
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6" noValidate>
       {generalError && (
-        <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+        <div
+          role="alert"
+          aria-live="polite"
+          className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
+        >
           {generalError}
         </div>
       )}
@@ -88,31 +129,55 @@ export function LoginForm({ onSuccess, onError, showSignupLink }: LoginFormProps
       {enabledMethods.email && (
         <>
           <EmailInput
+            ref={emailRef}
             id="email"
             name="email"
-            placeholder="Enter your email"
+            placeholder={copy.emailPlaceholder}
             value={formData.email}
             onChange={handleInputChange}
             error={errors.email}
-            label="Email"
+            label={copy.emailLabel}
             disabled={isLoading}
             required
           />
 
-          <PasswordInput
-            id="password"
-            name="password"
-            placeholder="Enter your password"
-            value={formData.password}
-            onChange={handleInputChange}
-            error={errors.password}
-            label="Password"
-            disabled={isLoading}
-            required
-          />
+          <div className="space-y-1">
+            <PasswordInput
+              ref={passwordRef}
+              id="password"
+              name="password"
+              placeholder={copy.passwordPlaceholder}
+              value={formData.password}
+              onChange={handleInputChange}
+              error={errors.password}
+              label={copy.passwordLabel}
+              disabled={isLoading}
+              required
+            />
+            {showForgotPasswordLink && (
+              <div className="text-right">
+                {onForgotPasswordClick ? (
+                  <button
+                    type="button"
+                    onClick={onForgotPasswordClick}
+                    className="text-sm font-medium text-primary hover:underline"
+                  >
+                    {copy.forgotPasswordLink}
+                  </button>
+                ) : (
+                  <a
+                    href={forgotPasswordHref}
+                    className="text-sm font-medium text-primary hover:underline"
+                  >
+                    {copy.forgotPasswordLink}
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Signing in...' : 'Sign In'}
+          <Button type="submit" className="w-full" disabled={isLoading} aria-busy={isLoading}>
+            {isLoading ? copy.loadingButton : copy.submitButton}
           </Button>
         </>
       )}
@@ -120,12 +185,12 @@ export function LoginForm({ onSuccess, onError, showSignupLink }: LoginFormProps
       {(enabledMethods.google || enabledMethods.github) && (
         <>
           {enabledMethods.email && (
-            <div className="relative">
+            <div className="relative" aria-hidden="true">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                <span className="bg-card px-2 text-muted-foreground">{copy.orContinueWith}</span>
               </div>
             </div>
           )}
@@ -142,17 +207,25 @@ export function LoginForm({ onSuccess, onError, showSignupLink }: LoginFormProps
       )}
 
       {!enabledMethods.email && !enabledMethods.google && !enabledMethods.github && (
-        <p className="text-sm text-muted-foreground">
-          No sign-in methods are enabled in the current auth configuration.
-        </p>
+        <p className="text-sm text-muted-foreground">{copy.noMethodsMessage}</p>
       )}
 
       {showSignupLink && (
         <p className="text-center text-sm text-muted-foreground">
-          Don't have an account?{' '}
-          <a href="#signup" className="font-medium text-primary hover:underline">
-            Sign up
-          </a>
+          {copy.signupPrompt}{' '}
+          {onSignupClick ? (
+            <button
+              type="button"
+              onClick={onSignupClick}
+              className="font-medium text-primary hover:underline"
+            >
+              {copy.signupLink}
+            </button>
+          ) : (
+            <a href={signupHref} className="font-medium text-primary hover:underline">
+              {copy.signupLink}
+            </a>
+          )}
         </p>
       )}
     </form>

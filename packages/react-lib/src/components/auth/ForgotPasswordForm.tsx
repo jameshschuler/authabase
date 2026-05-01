@@ -9,8 +9,26 @@ const forgotPasswordSchema = z.object({
   email: z.string().email('Invalid email address'),
 })
 
-export function ForgotPasswordForm({ onSuccess, onError, redirectTo }: ForgotPasswordFormProps) {
+const DEFAULT_COPY = {
+  emailLabel: 'Email',
+  emailPlaceholder: 'Enter your email',
+  submitButton: 'Send Reset Link',
+  loadingButton: 'Sending reset link...',
+  successMessage: 'Reset link sent. Check your email to continue.',
+}
+
+export function ForgotPasswordForm({
+  onSuccess,
+  onError,
+  redirectTo,
+  onSubmitStart,
+  onSubmitComplete,
+  onValidationError,
+  mapError,
+  copy: copyProp,
+}: ForgotPasswordFormProps) {
   const { supabase, enabledMethods } = useAuth()
+  const copy = { ...DEFAULT_COPY, ...copyProp }
   const [email, setEmail] = useState('')
   const [emailError, setEmailError] = useState<string | undefined>()
   const [generalError, setGeneralError] = useState<string | null>(null)
@@ -38,10 +56,13 @@ export function ForgotPasswordForm({ onSuccess, onError, redirectTo }: ForgotPas
 
     const parsed = forgotPasswordSchema.safeParse({ email })
     if (!parsed.success) {
-      setEmailError(parsed.error.issues[0]?.message ?? 'Invalid email address')
+      const msg = parsed.error.issues[0]?.message ?? 'Invalid email address'
+      setEmailError(msg)
+      onValidationError?.({ email: msg })
       return
     }
 
+    onSubmitStart?.()
     setIsLoading(true)
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -50,32 +71,46 @@ export function ForgotPasswordForm({ onSuccess, onError, redirectTo }: ForgotPas
 
       if (error) throw error
 
-      setSuccessMessage('Reset link sent. Check your email to continue.')
+      setSuccessMessage(copy.successMessage)
       onSuccess?.(email)
     } catch (error) {
       const err = error instanceof Error ? error : new Error('Failed to send reset link')
-      setGeneralError(err.message)
+      const message = mapError ? mapError(err) : err.message
+      setGeneralError(message)
       onError?.(err)
     } finally {
       setIsLoading(false)
+      onSubmitComplete?.()
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6" noValidate>
       {generalError && (
-        <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">{generalError}</div>
+        <div
+          role="alert"
+          aria-live="polite"
+          className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
+        >
+          {generalError}
+        </div>
       )}
 
       {successMessage && (
-        <div className="rounded-md bg-green-50 p-3 text-sm text-green-800">{successMessage}</div>
+        <div
+          role="status"
+          aria-live="polite"
+          className="rounded-md bg-green-50 p-3 text-sm text-green-800"
+        >
+          {successMessage}
+        </div>
       )}
 
       <EmailInput
         id="forgot-password-email"
         name="email"
-        label="Email"
-        placeholder="Enter your email"
+        label={copy.emailLabel}
+        placeholder={copy.emailPlaceholder}
         value={email}
         onChange={(event) => setEmail(event.target.value)}
         error={emailError}
@@ -83,8 +118,8 @@ export function ForgotPasswordForm({ onSuccess, onError, redirectTo }: ForgotPas
         required
       />
 
-      <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? 'Sending reset link...' : 'Send Reset Link'}
+      <Button type="submit" className="w-full" disabled={isLoading} aria-busy={isLoading}>
+        {isLoading ? copy.loadingButton : copy.submitButton}
       </Button>
     </form>
   )

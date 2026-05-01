@@ -18,5 +18,8 @@ export {
   EmailInput,
 } from './components'
 
+// Headless hooks
+export { useLoginForm, useSignupForm, useOTPFlow } from './hooks'
+
 // Utils
 export { createSupabaseClient } from './utils'

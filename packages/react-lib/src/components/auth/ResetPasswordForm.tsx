@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { z } from 'zod'
 import { Button } from '../ui/Button'
 import { PasswordInput } from '../inputs/PasswordInput'
@@ -10,26 +10,48 @@ type ResetPasswordFormData = {
   confirmPassword: string
 }
 
+const DEFAULT_COPY = {
+  passwordLabel: 'New Password',
+  confirmPasswordLabel: 'Confirm Password',
+  confirmPasswordPlaceholder: 'Confirm your new password',
+  submitButton: 'Update Password',
+  loadingButton: 'Updating password...',
+  successMessage: 'Password updated successfully. You can now sign in with your new password.',
+  passwordMismatch: 'Passwords do not match',
+}
+
 export function ResetPasswordForm({
   onSuccess,
   onError,
   minPasswordLength = 8,
-  passwordMismatchText = 'Passwords do not match',
+  requireUppercase = true,
+  requireLowercase = true,
+  requireNumber = true,
+  requireSpecialChar = false,
+  onSubmitStart,
+  onSubmitComplete,
+  onValidationError,
+  mapError,
+  copy: copyProp,
 }: ResetPasswordFormProps) {
   const { supabase } = useAuth()
+  const copy = { ...DEFAULT_COPY, ...copyProp }
   const minLength = Math.max(1, minPasswordLength)
   const resetPasswordSchema = z
     .object({
-      password: z
-        .string()
-        .min(minLength, `Password must be at least ${minLength} characters`)
-        .regex(/[a-z]/, 'Password must contain lowercase letters')
-        .regex(/[A-Z]/, 'Password must contain uppercase letters')
-        .regex(/\d/, 'Password must contain numbers'),
+      password: (() => {
+        let s = z.string().min(minLength, `Password must be at least ${minLength} characters`)
+        if (requireLowercase) s = s.regex(/[a-z]/, 'Password must contain lowercase letters')
+        if (requireUppercase) s = s.regex(/[A-Z]/, 'Password must contain uppercase letters')
+        if (requireNumber) s = s.regex(/\d/, 'Password must contain numbers')
+        if (requireSpecialChar)
+          s = s.regex(/[^a-zA-Z0-9]/, 'Password must contain a special character')
+        return s
+      })(),
       confirmPassword: z.string(),
     })
     .refine((data) => data.password === data.confirmPassword, {
-      message: passwordMismatchText,
+      message: copy.passwordMismatch,
       path: ['confirmPassword'],
     })
 
@@ -42,6 +64,8 @@ export function ResetPasswordForm({
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
 
+  const passwordRef = useRef<HTMLInputElement>(null)
+
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target
     const nextFormData = { ...formData, [name]: value }
@@ -51,7 +75,7 @@ export function ResetPasswordForm({
       setErrors((prev) => ({
         ...prev,
         [name]: undefined,
-        confirmPassword: passwordMismatchText,
+        confirmPassword: copy.passwordMismatch,
       }))
       return
     }
@@ -77,7 +101,7 @@ export function ResetPasswordForm({
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setErrors({ confirmPassword: passwordMismatchText })
+      setErrors({ confirmPassword: copy.passwordMismatch })
       return
     }
 
@@ -88,9 +112,12 @@ export function ResetPasswordForm({
         formErrors[issue.path[0] as keyof ResetPasswordFormData] = issue.message as any
       })
       setErrors(formErrors)
+      onValidationError?.(formErrors as Record<string, string>)
+      if (formErrors.password) passwordRef.current?.focus()
       return
     }
 
+    onSubmitStart?.()
     setIsLoading(true)
     try {
       const { data, error } = await supabase.auth.updateUser({
@@ -99,9 +126,7 @@ export function ResetPasswordForm({
 
       if (error) throw error
 
-      setSuccessMessage(
-        'Password updated successfully. You can now sign in with your new password.'
-      )
+      setSuccessMessage(copy.successMessage)
 
       const user: AuthUser = {
         id: data.user?.id ?? '',
@@ -112,29 +137,42 @@ export function ResetPasswordForm({
       onSuccess?.(user)
     } catch (error) {
       const err = error instanceof Error ? error : new Error('Failed to reset password')
-      setGeneralError(err.message)
+      const message = mapError ? mapError(err) : err.message
+      setGeneralError(message)
       onError?.(err)
     } finally {
       setIsLoading(false)
+      onSubmitComplete?.()
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6" noValidate>
       {generalError && (
-        <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+        <div
+          role="alert"
+          aria-live="polite"
+          className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
+        >
           {generalError}
         </div>
       )}
 
       {successMessage && (
-        <div className="rounded-md bg-green-50 p-3 text-sm text-green-800">{successMessage}</div>
+        <div
+          role="status"
+          aria-live="polite"
+          className="rounded-md bg-green-50 p-3 text-sm text-green-800"
+        >
+          {successMessage}
+        </div>
       )}
 
       <PasswordInput
+        ref={passwordRef}
         id="reset-password"
         name="password"
-        label="New Password"
+        label={copy.passwordLabel}
         placeholder={`At least ${minLength} characters`}
         value={formData.password}
         onChange={handleInputChange}
@@ -147,8 +185,8 @@ export function ResetPasswordForm({
       <PasswordInput
         id="reset-password-confirm"
         name="confirmPassword"
-        label="Confirm Password"
-        placeholder="Confirm your new password"
+        label={copy.confirmPasswordLabel}
+        placeholder={copy.confirmPasswordPlaceholder}
         value={formData.confirmPassword}
         onChange={handleInputChange}
         error={errors.confirmPassword}
@@ -156,8 +194,8 @@ export function ResetPasswordForm({
         required
       />
 
-      <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? 'Updating password...' : 'Update Password'}
+      <Button type="submit" className="w-full" disabled={isLoading} aria-busy={isLoading}>
+        {isLoading ? copy.loadingButton : copy.submitButton}
       </Button>
     </form>
   )
