@@ -474,4 +474,48 @@ describe('useOTPFlow', () => {
     })
     expect(result.current.generalError).toBe('Supabase client not initialized')
   })
+
+  it('uses onRequestOTP callback when provided (without supabase)', async () => {
+    mockedUseAuth.mockReturnValue({
+      ...mockedUseAuth(),
+      supabase: null,
+    } as any)
+    const onRequestOTP = vi.fn().mockResolvedValue(undefined)
+    const { result } = renderHook(() => useOTPFlow({ onRequestOTP }))
+    act(() => result.current.setEmail('a@b.com'))
+    await act(async () => {
+      await result.current.handleSendOTP()
+    })
+    expect(onRequestOTP).toHaveBeenCalledWith(
+      expect.objectContaining({ method: 'email', email: 'a@b.com' })
+    )
+    expect(result.current.step).toBe('otp')
+    expect(result.current.generalError).toBeNull()
+  })
+
+  it('uses onVerifyOTP callback when provided (without supabase)', async () => {
+    mockedUseAuth.mockReturnValue({
+      ...mockedUseAuth(),
+      supabase: null,
+    } as any)
+    const onSuccess = vi.fn()
+    const onVerifyOTP = vi.fn().mockResolvedValue({
+      id: 'custom-user',
+      email: 'a@b.com',
+      user_metadata: {},
+    })
+    const { result } = renderHook(() => useOTPFlow({ onVerifyOTP, onSuccess }))
+    act(() => {
+      result.current.setEmail('a@b.com')
+      result.current.setOtp('123456')
+    })
+    await act(async () => {
+      await result.current.handleVerifyOTP()
+    })
+    expect(onVerifyOTP).toHaveBeenCalledWith(
+      expect.objectContaining({ method: 'email', email: 'a@b.com', token: '123456' })
+    )
+    expect(onSuccess).toHaveBeenCalledWith(expect.objectContaining({ id: 'custom-user' }))
+    expect(result.current.generalError).toBeNull()
+  })
 })

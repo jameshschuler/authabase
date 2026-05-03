@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ElementRef } from 'react'
 import { Button } from '../ui/Button'
 import { EmailInput } from '../inputs/EmailInput'
 import { Input } from '../ui/Input'
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '../ui/InputOTP'
 import { Label } from '../ui/Label'
 import { useAuth } from '../../provider'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -33,11 +34,14 @@ const DEFAULT_COPY = {
 export function OTPForm({
   onSuccess,
   onError,
+  onRequestOTP,
+  onVerifyOTP,
   phoneNumber,
   defaultMethod = 'email',
   enabledMethods,
   resendCountdownSeconds = 60,
   otpLength = 6,
+  otpInputMode = 'segmented',
   autoSubmitOnComplete = false,
   onSubmitStart,
   onSubmitComplete,
@@ -56,7 +60,8 @@ export function OTPForm({
   const [generalError, setGeneralError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [resendCountdown, setResendCountdown] = useState(0)
-  const otpInputRef = useRef<HTMLInputElement>(null)
+  const otpInputRef = useRef<ElementRef<typeof InputOTP>>(null)
+  const otpPlainInputRef = useRef<HTMLInputElement>(null)
 
   const normalizePhone = (value: string) => value.replace(/[\s()-]/g, '')
   const isValidPhone = (value: string) => /^\+?[1-9]\d{7,14}$/.test(normalizePhone(value))
@@ -79,11 +84,6 @@ export function OTPForm({
 
   const handleSendOTP = async () => {
     setGeneralError(null)
-
-    if (!supabase) {
-      setGeneralError('Supabase client not initialized')
-      return
-    }
 
     if (deliveryMethod === 'email') {
       if (!email) {
@@ -110,12 +110,24 @@ export function OTPForm({
     onSubmitStart?.()
     setIsLoading(true)
     try {
-      const { error } =
-        deliveryMethod === 'email'
-          ? await supabase.auth.signInWithOtp({ email })
-          : await supabase.auth.signInWithOtp({ phone: normalizePhone(phone) })
+      if (onRequestOTP) {
+        await onRequestOTP({
+          method: deliveryMethod,
+          email: deliveryMethod === 'email' ? email : undefined,
+          phone: deliveryMethod === 'phone' ? normalizePhone(phone) : undefined,
+        })
+      } else {
+        if (!supabase) {
+          throw new Error('Supabase client not initialized')
+        }
 
-      if (error) throw error
+        const { error } =
+          deliveryMethod === 'email'
+            ? await supabase.auth.signInWithOtp({ email })
+            : await supabase.auth.signInWithOtp({ phone: normalizePhone(phone) })
+
+        if (error) throw error
+      }
 
       setSuccessMessage(
         deliveryMethod === 'email' ? copy.emailSuccessMessage : copy.phoneSuccessMessage
@@ -134,7 +146,13 @@ export function OTPForm({
       }, 1000)
 
       // Auto-focus OTP input after sending
-      setTimeout(() => otpInputRef.current?.focus(), 50)
+      setTimeout(() => {
+        if (otpInputMode === 'segmented') {
+          otpInputRef.current?.focus()
+        } else {
+          otpPlainInputRef.current?.focus()
+        }
+      }, 50)
     } catch (error) {
       const err =
         error instanceof Error ? error : new Error(`Failed to send OTP to ${contactLabel}`)
@@ -150,11 +168,6 @@ export function OTPForm({
   const handleVerifyOTP = async () => {
     setGeneralError(null)
 
-    if (!supabase) {
-      setGeneralError('Supabase client not initialized')
-      return
-    }
-
     if (!otp || otp.length !== otpLength) {
       const msg = `OTP must be ${otpLength} digits`
       setGeneralError(msg)
@@ -165,28 +178,44 @@ export function OTPForm({
     onSubmitStart?.()
     setIsLoading(true)
     try {
-      const { data, error } =
-        deliveryMethod === 'email'
-          ? await supabase.auth.verifyOtp({
-              email,
-              token: otp,
-              type: 'email',
-            })
-          : await supabase.auth.verifyOtp({
-              phone: normalizePhone(phone),
-              token: otp,
-              type: 'sms',
-            })
+      if (onVerifyOTP) {
+        const user = await onVerifyOTP({
+          method: deliveryMethod,
+          email: deliveryMethod === 'email' ? email : undefined,
+          phone: deliveryMethod === 'phone' ? normalizePhone(phone) : undefined,
+          token: otp,
+        })
+        if (user) {
+          onSuccess?.(user)
+        }
+      } else {
+        if (!supabase) {
+          throw new Error('Supabase client not initialized')
+        }
 
-      if (error) throw error
+        const { data, error } =
+          deliveryMethod === 'email'
+            ? await supabase.auth.verifyOtp({
+                email,
+                token: otp,
+                type: 'email',
+              })
+            : await supabase.auth.verifyOtp({
+                phone: normalizePhone(phone),
+                token: otp,
+                type: 'sms',
+              })
 
-      const user: AuthUser = {
-        id: data.user?.id || '',
-        email: data.user?.email,
-        phone: data.user?.phone,
-        user_metadata: data.user?.user_metadata,
+        if (error) throw error
+
+        const user: AuthUser = {
+          id: data.user?.id || '',
+          email: data.user?.email,
+          phone: data.user?.phone,
+          user_metadata: data.user?.user_metadata,
+        }
+        onSuccess?.(user)
       }
-      onSuccess?.(user)
     } catch (error) {
       const err = error instanceof Error ? error : new Error('Failed to verify OTP')
       const message = mapError ? mapError(err) : err.message
@@ -315,26 +344,56 @@ export function OTPForm({
         <>
           <div className="space-y-2">
             <Label htmlFor="otp">{copy.otpLabel}</Label>
-            <Input
-              ref={otpInputRef}
-              id="otp"
-              placeholder={copy.otpPlaceholder}
-              value={otp}
-              onChange={(e) => {
-                const next = e.target.value.replace(/\D/g, '').slice(0, otpLength)
-                setOtp(next)
-                if (autoSubmitOnComplete && next.length === otpLength) {
-                  void handleVerifyOTP()
-                }
-              }}
-              maxLength={otpLength}
-              disabled={isLoading}
-              className="text-center text-2xl tracking-widest"
-              required
-              aria-label={copy.otpLabel}
-              inputMode="numeric"
-              autoComplete="one-time-code"
-            />
+            {otpInputMode === 'segmented' ? (
+              <InputOTP
+                ref={otpInputRef}
+                id="otp"
+                placeholder={copy.otpPlaceholder}
+                value={otp}
+                onChange={(next) => {
+                  const normalized = next.replace(/\D/g, '').slice(0, otpLength)
+                  setOtp(normalized)
+                  if (autoSubmitOnComplete && normalized.length === otpLength) {
+                    void handleVerifyOTP()
+                  }
+                }}
+                maxLength={otpLength}
+                disabled={isLoading}
+                containerClassName="w-full justify-start"
+                required
+                aria-label={copy.otpLabel}
+                inputMode="numeric"
+                pattern="[0-9]*"
+                autoComplete="one-time-code"
+              >
+                <InputOTPGroup>
+                  {Array.from({ length: otpLength }).map((_, index) => (
+                    <InputOTPSlot key={index} index={index} />
+                  ))}
+                </InputOTPGroup>
+              </InputOTP>
+            ) : (
+              <Input
+                ref={otpPlainInputRef}
+                id="otp"
+                placeholder={copy.otpPlaceholder}
+                value={otp}
+                onChange={(e) => {
+                  const next = e.target.value.replace(/\D/g, '').slice(0, otpLength)
+                  setOtp(next)
+                  if (autoSubmitOnComplete && next.length === otpLength) {
+                    void handleVerifyOTP()
+                  }
+                }}
+                maxLength={otpLength}
+                disabled={isLoading}
+                className="text-center text-2xl tracking-widest"
+                required
+                aria-label={copy.otpLabel}
+                inputMode="numeric"
+                autoComplete="one-time-code"
+              />
+            )}
             <p className="text-sm text-muted-foreground">{copy.otpSubtext(contactValue)}</p>
           </div>
 

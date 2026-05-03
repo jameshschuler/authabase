@@ -9,6 +9,8 @@ import type { AuthUser, OTPFormProps, UseOTPFlowReturn } from '../types'
 export function useOTPFlow({
   onSuccess,
   onError,
+  onRequestOTP,
+  onVerifyOTP,
   onSubmitStart,
   onSubmitComplete,
   onValidationError,
@@ -22,6 +24,8 @@ export function useOTPFlow({
   OTPFormProps,
   | 'onSuccess'
   | 'onError'
+  | 'onRequestOTP'
+  | 'onVerifyOTP'
   | 'onSubmitStart'
   | 'onSubmitComplete'
   | 'onValidationError'
@@ -64,11 +68,6 @@ export function useOTPFlow({
   const handleSendOTP = async () => {
     setGeneralError(null)
 
-    if (!supabase) {
-      setGeneralError('Supabase client not initialized')
-      return
-    }
-
     if (deliveryMethod === 'email') {
       if (!email) {
         const msg = 'Email is required'
@@ -94,12 +93,24 @@ export function useOTPFlow({
     onSubmitStart?.()
     setIsLoading(true)
     try {
-      const { error } =
-        deliveryMethod === 'email'
-          ? await supabase.auth.signInWithOtp({ email })
-          : await supabase.auth.signInWithOtp({ phone: normalizePhone(phone) })
+      if (onRequestOTP) {
+        await onRequestOTP({
+          method: deliveryMethod,
+          email: deliveryMethod === 'email' ? email : undefined,
+          phone: deliveryMethod === 'phone' ? normalizePhone(phone) : undefined,
+        })
+      } else {
+        if (!supabase) {
+          throw new Error('Supabase client not initialized')
+        }
 
-      if (error) throw error
+        const { error } =
+          deliveryMethod === 'email'
+            ? await supabase.auth.signInWithOtp({ email })
+            : await supabase.auth.signInWithOtp({ phone: normalizePhone(phone) })
+
+        if (error) throw error
+      }
 
       setSuccessMessage(
         deliveryMethod === 'email'
@@ -133,11 +144,6 @@ export function useOTPFlow({
   const handleVerifyOTP = async () => {
     setGeneralError(null)
 
-    if (!supabase) {
-      setGeneralError('Supabase client not initialized')
-      return
-    }
-
     const length = otpLength ?? 6
     if (!otp || otp.length !== length) {
       const msg = `OTP must be ${length} digits`
@@ -149,24 +155,40 @@ export function useOTPFlow({
     onSubmitStart?.()
     setIsLoading(true)
     try {
-      const { data, error } =
-        deliveryMethod === 'email'
-          ? await supabase.auth.verifyOtp({ email, token: otp, type: 'email' })
-          : await supabase.auth.verifyOtp({
-              phone: normalizePhone(phone),
-              token: otp,
-              type: 'sms',
-            })
+      if (onVerifyOTP) {
+        const user = await onVerifyOTP({
+          method: deliveryMethod,
+          email: deliveryMethod === 'email' ? email : undefined,
+          phone: deliveryMethod === 'phone' ? normalizePhone(phone) : undefined,
+          token: otp,
+        })
+        if (user) {
+          onSuccess?.(user)
+        }
+      } else {
+        if (!supabase) {
+          throw new Error('Supabase client not initialized')
+        }
 
-      if (error) throw error
+        const { data, error } =
+          deliveryMethod === 'email'
+            ? await supabase.auth.verifyOtp({ email, token: otp, type: 'email' })
+            : await supabase.auth.verifyOtp({
+                phone: normalizePhone(phone),
+                token: otp,
+                type: 'sms',
+              })
 
-      const user: AuthUser = {
-        id: data.user?.id || '',
-        email: data.user?.email,
-        phone: data.user?.phone,
-        user_metadata: data.user?.user_metadata,
+        if (error) throw error
+
+        const user: AuthUser = {
+          id: data.user?.id || '',
+          email: data.user?.email,
+          phone: data.user?.phone,
+          user_metadata: data.user?.user_metadata,
+        }
+        onSuccess?.(user)
       }
-      onSuccess?.(user)
     } catch (error) {
       const err = error instanceof Error ? error : new Error('Failed to verify OTP')
       const message = mapError ? mapError(err) : err.message

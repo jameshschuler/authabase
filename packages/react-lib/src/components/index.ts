@@ -17,4 +17,5 @@ export { AuthContainer } from './containers/AuthContainer'
 // UI Components
 export { Button } from './ui/Button'
 export { Input } from './ui/Input'
+export { InputOTP, InputOTPGroup, InputOTPSlot } from './ui/InputOTP'
 export { Label } from './ui/Label'

@@ -5,6 +5,7 @@ import { useAuth } from '../provider'
 import { MagicLinkForm } from '../components/auth/MagicLinkForm'
 import { ForgotPasswordForm } from '../components/auth/ForgotPasswordForm'
 import { ResetPasswordForm } from '../components/auth/ResetPasswordForm'
+import { OTPForm } from '../components/auth/OTPForm'
 
 vi.mock('../provider', () => ({
   useAuth: vi.fn(),
@@ -12,6 +13,7 @@ vi.mock('../provider', () => ({
 
 type SupabaseAuthMock = {
   signInWithOtp: ReturnType<typeof vi.fn>
+  verifyOtp: ReturnType<typeof vi.fn>
   resetPasswordForEmail: ReturnType<typeof vi.fn>
   updateUser: ReturnType<typeof vi.fn>
 }
@@ -22,6 +24,7 @@ let authMock: SupabaseAuthMock
 function createSupabaseAuthMock(): SupabaseAuthMock {
   return {
     signInWithOtp: vi.fn().mockResolvedValue({ error: null }),
+    verifyOtp: vi.fn().mockResolvedValue({ data: { user: null }, error: null }),
     resetPasswordForEmail: vi.fn().mockResolvedValue({ error: null }),
     updateUser: vi.fn().mockResolvedValue({
       data: {
@@ -126,5 +129,39 @@ describe('Auth Flows', () => {
         email: 'test@example.com',
       })
     )
+  })
+
+  it('supports classic single OTP input mode', async () => {
+    const user = userEvent.setup()
+    const onRequestOTP = vi.fn().mockResolvedValue(undefined)
+    const onVerifyOTP = vi.fn().mockResolvedValue({
+      id: 'otp-user',
+      email: 'otp@example.com',
+    })
+
+    render(<OTPForm otpInputMode="single" onRequestOTP={onRequestOTP} onVerifyOTP={onVerifyOTP} />)
+
+    await user.type(screen.getByLabelText('Email'), 'otp@example.com')
+    await user.click(screen.getByRole('button', { name: 'Send OTP' }))
+
+    await waitFor(() => {
+      expect(onRequestOTP).toHaveBeenCalledWith({
+        method: 'email',
+        email: 'otp@example.com',
+        phone: undefined,
+      })
+    })
+
+    await user.type(screen.getByRole('textbox', { name: 'Enter OTP Code' }), '123456')
+    await user.click(screen.getByRole('button', { name: 'Verify OTP' }))
+
+    await waitFor(() => {
+      expect(onVerifyOTP).toHaveBeenCalledWith({
+        method: 'email',
+        email: 'otp@example.com',
+        phone: undefined,
+        token: '123456',
+      })
+    })
   })
 })

@@ -18,6 +18,9 @@ type EnabledMethods = NonNullable<AuthConfig['enabledMethods']>
 
 interface DemoState {
   useSupabaseCredentials: boolean
+  useCustomOtpApi: boolean
+  otpApiUrl: string
+  otpVerifyApiUrl: string
   enabledMethods: EnabledMethods
   minPasswordLength: number
   passwordMismatchText: string
@@ -42,6 +45,48 @@ const defaultEnabledMethods: EnabledMethods = {
 
 function AuthDemo({ demoState }: { demoState: DemoState }) {
   const [tab, setTab] = useState<AuthTab>('login')
+
+  const mockRequestOTP = async (payload: {
+    method: 'email' | 'phone'
+    email?: string
+    phone?: string
+  }) => {
+    const res = await fetch(demoState.otpApiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      throw new Error((data as { message?: string }).message ?? `Request failed: ${res.status}`)
+    }
+  }
+
+  const mockVerifyOTP = async (payload: {
+    method: 'email' | 'phone'
+    email?: string
+    phone?: string
+    token: string
+  }) => {
+    const verifyUrl = demoState.otpVerifyApiUrl || demoState.otpApiUrl
+    const res = await fetch(verifyUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      throw new Error(
+        (data as { message?: string }).message ?? `Verification failed: ${res.status}`
+      )
+    }
+    return (await res.json()) as {
+      id: string
+      email?: string
+      phone?: string
+      user_metadata?: Record<string, unknown>
+    }
+  }
 
   const tabs = useMemo(
     () => [
@@ -95,12 +140,12 @@ function AuthDemo({ demoState }: { demoState: DemoState }) {
 
   return (
     <AuthContainer title="Authentication Demo" subtitle="Try different authentication methods">
-      <div className="mb-6 flex gap-2 border-b border-border">
+      <div className="mb-6 flex flex-wrap gap-2 border-b border-border pb-2">
         {availableTabs.map((item) => (
           <button
             key={item.id}
             onClick={() => setTab(item.id)}
-            className={`px-4 py-2 font-medium transition-colors ${
+            className={`whitespace-nowrap px-4 py-2 font-medium transition-colors ${
               tab === item.id
                 ? 'border-b-2 border-primary text-primary'
                 : 'text-muted-foreground hover:text-foreground'
@@ -135,6 +180,8 @@ function AuthDemo({ demoState }: { demoState: DemoState }) {
             alert(`Logged in with OTP as ${user.email || user.phone || 'verified user'}`)
           }
           onError={(error) => alert(`Error: ${error.message}`)}
+          onRequestOTP={demoState.useCustomOtpApi ? mockRequestOTP : undefined}
+          onVerifyOTP={demoState.useCustomOtpApi ? mockVerifyOTP : undefined}
           enabledMethods={demoState.otpMethods}
           copy={{
             phoneHint: demoState.otpHintText,
@@ -396,6 +443,59 @@ function DemoControls({
         <label className="flex items-center gap-2 text-sm text-foreground">
           <input
             type="checkbox"
+            checked={demoState.useCustomOtpApi}
+            onChange={(e) =>
+              setDemoState((prev) => ({
+                ...prev,
+                useCustomOtpApi: e.target.checked,
+              }))
+            }
+          />
+          Use external OTP API callbacks
+        </label>
+
+        {demoState.useCustomOtpApi && (
+          <div className="flex flex-col gap-1 text-sm text-foreground sm:col-span-2 lg:col-span-3">
+            <label htmlFor="otpApiUrl">OTP API URL</label>
+            <input
+              id="otpApiUrl"
+              type="url"
+              value={demoState.otpApiUrl}
+              onChange={(e) =>
+                setDemoState((prev) => ({
+                  ...prev,
+                  otpApiUrl: e.target.value,
+                }))
+              }
+              placeholder="https://your-api.example.com"
+              className="rounded border border-border bg-background px-3 py-2 text-sm"
+            />
+            <label htmlFor="otpVerifyApiUrl" className="mt-2">
+              OTP Verify API URL
+            </label>
+            <input
+              id="otpVerifyApiUrl"
+              type="url"
+              value={demoState.otpVerifyApiUrl}
+              onChange={(e) =>
+                setDemoState((prev) => ({
+                  ...prev,
+                  otpVerifyApiUrl: e.target.value,
+                }))
+              }
+              placeholder="https://your-api.example.com/verify (optional)"
+              className="rounded border border-border bg-background px-3 py-2 text-sm"
+            />
+            <p className="text-xs text-muted-foreground">
+              Request uses OTP API URL. Verify uses OTP Verify API URL, or OTP API URL if left
+              empty.
+            </p>
+          </div>
+        )}
+
+        <label className="flex items-center gap-2 text-sm text-foreground">
+          <input
+            type="checkbox"
             checked={Boolean(demoState.enabledMethods.email)}
             onChange={(e) => setEnabledMethod('email', e.target.checked)}
           />
@@ -582,6 +682,9 @@ function DemoControls({
           onClick={() =>
             setDemoState({
               useSupabaseCredentials: false,
+              useCustomOtpApi: false,
+              otpApiUrl: '',
+              otpVerifyApiUrl: '',
               enabledMethods: { ...defaultEnabledMethods },
               otpMethods: {
                 email: true,
@@ -606,6 +709,9 @@ function DemoControls({
 export default function App() {
   const [demoState, setDemoState] = useState<DemoState>({
     useSupabaseCredentials: false,
+    useCustomOtpApi: false,
+    otpApiUrl: '',
+    otpVerifyApiUrl: '',
     enabledMethods: { ...defaultEnabledMethods },
     minPasswordLength: 8,
     passwordMismatchText: 'Passwords do not match',

@@ -145,6 +145,19 @@ export interface OTPFormCopy {
   noMethodsMessage?: string
 }
 
+export interface OTPRequestPayload {
+  method: 'email' | 'phone'
+  email?: string
+  phone?: string
+}
+
+export interface OTPVerifyPayload {
+  method: 'email' | 'phone'
+  email?: string
+  phone?: string
+  token: string
+}
+
 // ─── Form prop interfaces ─────────────────────────────────────────────────────
 
 export interface LoginFormProps extends FormLifecycleProps {
@@ -203,6 +216,17 @@ export interface SignupFormProps extends FormLifecycleProps, PasswordPolicyProps
 export interface OTPFormProps extends FormLifecycleProps {
   onSuccess?: (user: AuthUser) => void
   onError?: (error: Error) => void
+  /**
+   * Optional callback to send/request OTP using your own backend.
+   * When provided, the component will not call `supabase.auth.signInWithOtp`.
+   */
+  onRequestOTP?: (payload: OTPRequestPayload) => Promise<void> | void
+  /**
+   * Optional callback to verify OTP using your own backend.
+   * When provided, the component will not call `supabase.auth.verifyOtp`.
+   * Return a user to trigger `onSuccess`.
+   */
+  onVerifyOTP?: (payload: OTPVerifyPayload) => Promise<AuthUser | void> | AuthUser | void
   phoneNumber?: string
   defaultMethod?: 'email' | 'phone'
   enabledMethods?: {
@@ -213,6 +237,8 @@ export interface OTPFormProps extends FormLifecycleProps {
   resendCountdownSeconds?: number
   /** Number of digits in the OTP code (default: 6). */
   otpLength?: number
+  /** Choose OTP input UI: segmented boxes (default) or a classic single input field. */
+  otpInputMode?: 'segmented' | 'single'
   /** Automatically verify when the user enters the last digit. */
   autoSubmitOnComplete?: boolean
   /** Override any displayed text. */
