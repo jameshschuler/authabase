@@ -125,7 +125,7 @@ function AuthDemo({ demoState }: { demoState: DemoState }) {
           onError={(error) => alert(`Error: ${error.message}`)}
           showLoginLink={demoState.showLoginLink}
           minPasswordLength={demoState.minPasswordLength}
-          passwordMismatchText={demoState.passwordMismatchText}
+          copy={{ passwordMismatch: demoState.passwordMismatchText }}
         />
       )}
 
@@ -136,8 +136,10 @@ function AuthDemo({ demoState }: { demoState: DemoState }) {
           }
           onError={(error) => alert(`Error: ${error.message}`)}
           enabledMethods={demoState.otpMethods}
-          hintText={demoState.otpHintText}
-          sendOtpText={demoState.otpSendText}
+          copy={{
+            phoneHint: demoState.otpHintText,
+            sendOtpButton: demoState.otpSendText,
+          }}
           defaultMethod={
             demoState.otpMethods.phone && !demoState.otpMethods.email ? 'phone' : 'email'
           }
@@ -165,7 +167,7 @@ function AuthDemo({ demoState }: { demoState: DemoState }) {
           onSuccess={(user) => alert(`Password updated for ${user.email || 'your account'}`)}
           onError={(error) => alert(`Error: ${error.message}`)}
           minPasswordLength={demoState.minPasswordLength}
-          passwordMismatchText={demoState.passwordMismatchText}
+          copy={{ passwordMismatch: demoState.passwordMismatchText }}
         />
       )}
     </AuthContainer>
