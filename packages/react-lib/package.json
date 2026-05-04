@@ -1,7 +1,7 @@
 {
     "name": "@authabase/react",
     "type": "module",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Reusable React auth components with Supabase integration, shadcn UI, and configurable auth methods",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -43,11 +43,16 @@
         "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
         "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\"",
         "test": "vitest",
+        "test:run": "vitest --run",
         "test:ui": "vitest --ui",
         "test:coverage": "vitest --coverage",
         "type-check": "tsc --noEmit",
         "storybook": "storybook dev -p 6006",
-        "build-storybook": "storybook build"
+        "build-storybook": "storybook build",
+        "release:whoami": "npm whoami",
+        "release:check": "npm run release:whoami && npm run type-check && npm run test:run && npm run build",
+        "release:dry-run": "npm run release:check && npm pack --dry-run",
+        "release:publish": "npm run release:check && npm publish --access public"
     },
     "dependencies": {
         "@base-ui/react": "^1.0.0",
@@ -113,6 +118,6 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/yourusername/authabase"
+        "url": "https://github.com/jameshschuler/authabase"
     }
 }
