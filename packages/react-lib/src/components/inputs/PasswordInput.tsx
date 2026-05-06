@@ -2,8 +2,7 @@ import React, { useState } from 'react'
 import { Input } from '../ui/Input'
 import { Label } from '../ui/Label'
 import { cn, getPasswordStrength } from '../../lib/utils'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons'
+import { EyeIcon, EyeSlashIcon } from '../icons/Eye'
 import type { PasswordInputProps } from '../../types'
 
 export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
@@ -29,7 +28,7 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             tabIndex={-1}
           >
-            <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
+            {showPassword ? <EyeSlashIcon /> : <EyeIcon />}
           </button>
         </div>
         {showStrengthIndicator && strength && (

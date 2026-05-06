@@ -393,6 +393,9 @@ function DemoControls({
   return (
     <div className="mx-auto mb-6 w-full max-w-3xl rounded-lg border border-border bg-card p-4">
       <h2 className="mb-3 text-sm font-semibold text-foreground">Demo Controls</h2>
+      <p className="mb-3 text-xs text-muted-foreground">
+        Social auth buttons use built-in Google and GitHub SVG icons.
+      </p>
 
       <div className="mb-4 flex flex-wrap gap-2">
         <button

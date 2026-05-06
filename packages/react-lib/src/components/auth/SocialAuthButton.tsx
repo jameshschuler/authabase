@@ -1,15 +1,11 @@
 import { useState } from 'react'
 import { Button } from '../ui/Button'
 import { useAuth } from '../../provider'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faGoogle, faGithub } from '@fortawesome/free-brands-svg-icons'
+import { Google } from '../icons/Google'
+import { GitHub } from '../icons/GitHub'
 import type { SocialAuthButtonProps } from '../../types'
 
-export function SocialAuthButton({
-  provider,
-  onError,
-  className,
-}: SocialAuthButtonProps) {
+export function SocialAuthButton({ provider, onError, className }: SocialAuthButtonProps) {
   const { supabase } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
 
@@ -37,7 +33,7 @@ export function SocialAuthButton({
     }
   }
 
-  const icon = provider === 'google' ? faGoogle : faGithub
+  const Icon = provider === 'google' ? Google : GitHub
   const label = `Sign in with ${provider.charAt(0).toUpperCase() + provider.slice(1)}`
   const providerStyles =
     'border !border-slate-600 bg-white text-slate-900 hover:bg-slate-50 hover:!border-slate-800'
@@ -51,7 +47,7 @@ export function SocialAuthButton({
       type="button"
     >
       <span className="inline-flex h-6 w-6 items-center justify-center rounded-sm">
-        <FontAwesomeIcon icon={icon} className="text-sm" />
+        <Icon className="h-4 w-4" aria-hidden="true" />
       </span>
       {isLoading ? 'Signing in...' : label}
     </Button>

@@ -20,7 +20,7 @@ export default defineConfig({
       fileName: (format) => {
         if (format === 'es') return 'index.esm.js'
         if (format === 'umd') return 'index.umd.js'
-        return 'index.js'
+        return 'index.cjs'
       },
     },
     rollupOptions: {

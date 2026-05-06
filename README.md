@@ -46,7 +46,7 @@ pnpm add @authabase/react
 ### Peer Dependencies
 
 ```bash
-npm install react react-dom @fortawesome/react-fontawesome @fortawesome/fontawesome-svg-core @fortawesome/free-brands-svg-icons
+npm install react react-dom
 ```
 
 ## Quick Start
@@ -171,7 +171,7 @@ Allows the user to set a new password after clicking a reset link.
 
 ### SocialAuthButton
 
-Standalone OAuth button for Google or GitHub.
+Standalone OAuth button for Google or GitHub, using built-in SVG icons.
 
 ```tsx
 <SocialAuthButton provider="google" onSuccess={(user) => {}} onError={(error) => {}} />
@@ -233,7 +233,7 @@ If you consume this package in another app, keep in mind:
 
 ```bash
 npm install @authabase/react
-npm install react react-dom @fortawesome/react-fontawesome @fortawesome/fontawesome-svg-core
+npm install react react-dom
 ```
 
 ### 2. Initialize shadcn in the consumer app

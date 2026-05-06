@@ -5,6 +5,14 @@ const meta: Meta<typeof SocialAuthButton> = {
   title: 'Auth/SocialAuthButton',
   component: SocialAuthButton,
   tags: ['autodocs'],
+  parameters: {
+    docs: {
+      description: {
+        component:
+          'OAuth sign-in button for Google or GitHub. Uses built-in inline SVG icon components.',
+      },
+    },
+  },
   argTypes: {
     onSuccess: { action: 'onSuccess' },
     onError: { action: 'onError' },

@@ -9,7 +9,7 @@ This is a reusable React authentication components library built with TypeScript
 - **Language**: TypeScript with strict mode enabled
 - **UI Framework**: React 18+ with shadcn UI components
 - **Styling**: Tailwind CSS with custom CSS variables
-- **Icons**: FontAwesome for all UI icons
+- **Icons**: Inline SVG components (no external icon library)
 - **State Management**: React Context API
 - **Forms**: Zod for validation
 - **Testing**: Vitest + React Testing Library

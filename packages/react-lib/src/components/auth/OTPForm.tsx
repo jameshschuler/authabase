@@ -5,8 +5,7 @@ import { Input } from '../ui/Input'
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '../ui/InputOTP'
 import { Label } from '../ui/Label'
 import { useAuth } from '../../provider'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faClock } from '@fortawesome/free-solid-svg-icons'
+import { ClockIcon } from '../icons/Clock'
 import type { OTPFormProps, AuthUser } from '../../types'
 
 const DEFAULT_COPY = {
@@ -420,7 +419,7 @@ export function OTPForm({
             >
               {resendCountdown > 0 ? (
                 <span className="flex items-center gap-1">
-                  <FontAwesomeIcon icon={faClock} className="text-xs" />
+                  <ClockIcon className="text-xs" />
                   {copy.resendCountdownText(resendCountdown)}
                 </span>
               ) : (

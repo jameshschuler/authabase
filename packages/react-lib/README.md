@@ -19,6 +19,7 @@ Reusable, type-safe React authentication components with Supabase integration, T
 - Forgot password and reset password flows
 - Configurable enabled auth methods
 - TypeScript-first API
+- Built-in Google/GitHub SVG icons for social auth buttons
 - Form lifecycle hooks and error mapping
 - Per-form copy overrides for i18n/custom UX text
 
@@ -33,7 +34,7 @@ npm install @authabase/react
 Install peer dependencies:
 
 ```bash
-npm install react react-dom @fortawesome/react-fontawesome @fortawesome/fontawesome-svg-core
+npm install react react-dom
 ```
 
 ## Quick Start
