@@ -12,6 +12,7 @@ export default defineConfig({
   },
   build: {
     outDir: path.resolve(__dirname, 'dist'),
+    emptyOutDir: false,
     lib: {
       entry: path.resolve(__dirname, 'src/index.ts'),
       name: 'AuthABase',
