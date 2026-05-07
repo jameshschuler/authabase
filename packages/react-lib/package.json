@@ -1,7 +1,7 @@
 {
     "name": "@authabase/react",
     "type": "module",
-    "version": "0.1.2",
+    "version": "0.1.4",
     "description": "Reusable React auth components with Supabase integration, shadcn UI, and configurable auth methods",
     "main": "dist/index.cjs",
     "types": "dist/index.d.ts",
@@ -36,7 +36,7 @@
     ],
     "scripts": {
         "dev": "vite",
-        "build": "node -e \"require('fs').rmSync('dist',{ recursive: true, force: true })\" && tsc && vite build",
+        "build": "node -e \"require('fs').rmSync('dist',{ recursive: true, force: true })\" && tsc -p tsconfig.build.json && vite build",
         "build:watch": "vite build --watch",
         "preview": "vite preview",
         "lint": "eslint src --ext .ts,.tsx",
@@ -51,7 +51,8 @@
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build",
         "release:whoami": "npm whoami",
-        "release:check": "npm run release:whoami && npm run type-check && npm run test:run && npm run build",
+        "release:contents-check": "node -e \"const cp=require('child_process'); const out=cp.execSync('npm pack --dry-run --json',{encoding:'utf8'}); const data=JSON.parse(out); const files=(data[0]?.files||[]).map(f=>f.path); const bad=files.filter(p=>/(^|\\/)dist\\/(tests|stories)\\/|\\.test\\.|\\.stories\\./.test(p)); if(bad.length){console.error('Disallowed files in package:\\n'+bad.join('\\n')); process.exit(1)} console.log('Package contents check passed')\"",
+        "release:check": "npm run release:whoami && npm run type-check && npm run test:run && npm run build && npm run release:contents-check",
         "release:dry-run": "npm run release:check && npm pack --dry-run",
         "release:publish": "npm run release:check && npm publish --access public"
     },
@@ -109,8 +110,8 @@
         "components",
         "typescript"
     ],
-    "author": "Your Name",
-    "license": "MIT",
+    "author": "James Schuler",
+    "license": "ISC",
     "repository": {
         "type": "git",
         "url": "https://github.com/jameshschuler/authabase"
