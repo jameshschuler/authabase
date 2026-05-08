@@ -1,3 +1,5 @@
+import './styles/globals.css'
+
 // Types
 export * from './types'
 

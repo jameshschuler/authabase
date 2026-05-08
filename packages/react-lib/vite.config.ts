@@ -16,6 +16,7 @@ export default defineConfig({
     lib: {
       entry: path.resolve(__dirname, 'src/index.ts'),
       name: 'AuthABase',
+      cssFileName: 'styles',
       formats: ['es', 'umd', 'cjs'],
       fileName: (format) => {
         if (format === 'es') return 'index.esm.js'
