@@ -46,7 +46,7 @@ pnpm add @authabase/react
 ### Peer Dependencies
 
 ```bash
-npm install react react-dom
+npm install react react-dom tailwindcss@^4
 ```
 
 ## Quick Start
@@ -233,7 +233,7 @@ If you consume this package in another app, keep in mind:
 
 ```bash
 npm install @authabase/react
-npm install react react-dom
+npm install react react-dom tailwindcss@^4
 ```
 
 ### 2. Initialize shadcn in the consumer app

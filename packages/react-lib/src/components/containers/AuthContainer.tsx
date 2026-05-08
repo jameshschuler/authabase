@@ -1,12 +1,7 @@
 import { cn } from '../../lib/utils'
 import type { AuthContainerProps } from '../../types'
 
-export function AuthContainer({
-  children,
-  title,
-  subtitle,
-  className,
-}: AuthContainerProps) {
+export function AuthContainer({ children, title, subtitle, className }: AuthContainerProps) {
   return (
     <div
       className={cn(
@@ -14,9 +9,9 @@ export function AuthContainer({
         className
       )}
     >
-      <div className="w-full max-w-md space-y-8">
+      <div className="w-full max-w-md">
         {(title || subtitle) && (
-          <div className="text-center">
+          <div className="mb-6 text-center sm:mb-8">
             {title && (
               <h1 className="text-3xl font-bold tracking-tight text-foreground">{title}</h1>
             )}

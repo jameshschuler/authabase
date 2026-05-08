@@ -34,8 +34,10 @@ npm install @authabase/react
 Install peer dependencies:
 
 ```bash
-npm install react react-dom
+npm install react react-dom tailwindcss@^4
 ```
+
+This library supports Tailwind CSS 4.x.
 
 ## Quick Start
 
