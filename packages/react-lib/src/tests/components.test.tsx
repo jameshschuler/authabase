@@ -29,7 +29,8 @@ describe('UI Components', () => {
     it('applies variant styles correctly', () => {
       const { container } = render(<Button variant="destructive">Delete</Button>)
       const button = container.querySelector('button')
-      expect(button).toHaveClass('bg-destructive/10')
+      expect(button).toHaveClass('bg-[var(--auth-danger-bg)]')
+      expect(button).toHaveClass('text-[var(--auth-danger-fg)]')
     })
   })
 
