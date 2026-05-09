@@ -1,11 +1,15 @@
 {
     "name": "@authabase/react",
     "type": "module",
-    "version": "0.1.6",
+    "version": "0.1.9",
     "description": "Reusable React auth components with Supabase integration, shadcn UI, and configurable auth methods",
     "main": "dist/index.cjs",
     "types": "dist/index.d.ts",
     "module": "dist/index.esm.js",
+    "style": "dist/styles.css",
+    "sideEffects": [
+        "**/*.css"
+    ],
     "exports": {
         ".": {
             "import": "./dist/index.esm.js",

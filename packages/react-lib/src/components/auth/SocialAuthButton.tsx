@@ -35,13 +35,11 @@ export function SocialAuthButton({ provider, onError, className }: SocialAuthBut
 
   const Icon = provider === 'google' ? Google : GitHub
   const label = `Sign in with ${provider.charAt(0).toUpperCase() + provider.slice(1)}`
-  const providerStyles =
-    'border !border-slate-600 bg-white text-slate-900 hover:bg-slate-50 hover:!border-slate-800'
 
   return (
     <Button
       variant="outline"
-      className={`w-full justify-start gap-2 ${providerStyles} ${className ?? ''}`}
+      className={`auth-social-button w-full justify-start gap-2 ${className ?? ''}`}
       onClick={handleSocialSignIn}
       disabled={isLoading}
       type="button"

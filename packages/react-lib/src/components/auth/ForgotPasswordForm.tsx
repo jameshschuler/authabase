@@ -87,21 +87,13 @@ export function ForgotPasswordForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6" noValidate>
       {generalError && (
-        <div
-          role="alert"
-          aria-live="polite"
-          className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
-        >
+        <div role="alert" aria-live="polite" className="auth-error">
           {generalError}
         </div>
       )}
 
       {successMessage && (
-        <div
-          role="status"
-          aria-live="polite"
-          className="rounded-md bg-green-50 p-3 text-sm text-green-800"
-        >
+        <div role="status" aria-live="polite" className="auth-success">
           {successMessage}
         </div>
       )}

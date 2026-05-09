@@ -117,11 +117,7 @@ export function LoginForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6" noValidate>
       {generalError && (
-        <div
-          role="alert"
-          aria-live="polite"
-          className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
-        >
+        <div role="alert" aria-live="polite" className="auth-error">
           {generalError}
         </div>
       )}
@@ -160,15 +156,12 @@ export function LoginForm({
                   <button
                     type="button"
                     onClick={onForgotPasswordClick}
-                    className="text-sm font-medium text-primary hover:underline"
+                    className="auth-link text-sm font-medium"
                   >
                     {copy.forgotPasswordLink}
                   </button>
                 ) : (
-                  <a
-                    href={forgotPasswordHref}
-                    className="text-sm font-medium text-primary hover:underline"
-                  >
+                  <a href={forgotPasswordHref} className="auth-link text-sm font-medium">
                     {copy.forgotPasswordLink}
                   </a>
                 )}
@@ -187,10 +180,10 @@ export function LoginForm({
           {enabledMethods.email && (
             <div className="relative" aria-hidden="true">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border" />
+                <div className="auth-divider-line w-full border-t" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="bg-card px-2 text-muted-foreground">{copy.orContinueWith}</span>
+                <span className="auth-divider-label px-2">{copy.orContinueWith}</span>
               </div>
             </div>
           )}
@@ -207,22 +200,18 @@ export function LoginForm({
       )}
 
       {!enabledMethods.email && !enabledMethods.google && !enabledMethods.github && (
-        <p className="text-sm text-muted-foreground">{copy.noMethodsMessage}</p>
+        <p className="auth-muted text-sm">{copy.noMethodsMessage}</p>
       )}
 
       {showSignupLink && (
-        <p className="text-center text-sm text-muted-foreground">
+        <p className="auth-muted text-center text-sm">
           {copy.signupPrompt}{' '}
           {onSignupClick ? (
-            <button
-              type="button"
-              onClick={onSignupClick}
-              className="font-medium text-primary hover:underline"
-            >
+            <button type="button" onClick={onSignupClick} className="auth-link font-medium">
               {copy.signupLink}
             </button>
           ) : (
-            <a href={signupHref} className="font-medium text-primary hover:underline">
+            <a href={signupHref} className="auth-link font-medium">
               {copy.signupLink}
             </a>
           )}

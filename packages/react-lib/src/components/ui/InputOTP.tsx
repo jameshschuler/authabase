@@ -31,13 +31,14 @@ function InputOTPSlot({
   return (
     <div
       className={cn(
-        'relative flex h-10 w-10 items-center justify-center rounded-md border border-input bg-transparent text-sm font-medium transition-all',
-        slot.isActive && 'z-10 border-ring ring-1 ring-ring/50',
+        'auth-otp-slot relative flex h-10 w-10 items-center justify-center rounded-md border text-sm font-medium transition-all',
+        slot.isActive && 'z-10',
         className
       )}
+      data-active={slot.isActive ? 'true' : 'false'}
       {...props}
     >
-      {slot.char ?? <span className="text-muted-foreground">•</span>}
+      {slot.char ?? <span className="auth-otp-placeholder">•</span>}
     </div>
   )
 }

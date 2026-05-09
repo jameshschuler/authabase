@@ -5,22 +5,18 @@ export function AuthContainer({ children, title, subtitle, className }: AuthCont
   return (
     <div
       className={cn(
-        'flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8',
+        'auth-page flex min-h-screen items-center justify-center px-4 py-12 sm:px-6 lg:px-8',
         className
       )}
     >
       <div className="w-full max-w-md">
         {(title || subtitle) && (
           <div className="mb-6 text-center sm:mb-8">
-            {title && (
-              <h1 className="text-3xl font-bold tracking-tight text-foreground">{title}</h1>
-            )}
-            {subtitle && <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>}
+            {title && <h1 className="text-3xl font-bold tracking-tight">{title}</h1>}
+            {subtitle && <p className="auth-muted mt-2 text-sm">{subtitle}</p>}
           </div>
         )}
-        <div className="rounded-lg border border-border bg-card p-6 shadow-sm sm:p-8">
-          {children}
-        </div>
+        <div className="auth-card rounded-lg border p-6 shadow-sm sm:p-8">{children}</div>
       </div>
     </div>
   )

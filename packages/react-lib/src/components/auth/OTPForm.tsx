@@ -240,27 +240,19 @@ export function OTPForm({
       noValidate
     >
       {generalError && (
-        <div
-          role="alert"
-          aria-live="polite"
-          className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
-        >
+        <div role="alert" aria-live="polite" className="auth-error">
           {generalError}
         </div>
       )}
 
       {availableMethods.length === 0 && (
-        <div role="alert" className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
+        <div role="alert" className="auth-error">
           {copy.noMethodsMessage}
         </div>
       )}
 
       {successMessage && (
-        <div
-          role="status"
-          aria-live="polite"
-          className="rounded-md bg-green-50 p-3 text-sm text-green-800"
-        >
+        <div role="status" aria-live="polite" className="auth-success">
           {successMessage}
         </div>
       )}
@@ -268,21 +260,14 @@ export function OTPForm({
       {step === 'contact' ? (
         <>
           {availableMethods.length > 1 && (
-            <div
-              className="grid grid-cols-2 gap-2 rounded-md border border-border p-1"
-              role="tablist"
-            >
+            <div className="auth-tablist grid grid-cols-2 gap-2 rounded-md p-1" role="tablist">
               {isEmailEnabled && (
                 <button
                   type="button"
                   role="tab"
                   aria-selected={deliveryMethod === 'email'}
                   onClick={() => setDeliveryMethod('email')}
-                  className={`rounded px-3 py-1.5 text-sm font-medium ${
-                    deliveryMethod === 'email'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
+                  className="auth-tab rounded px-3 py-1.5 text-sm font-medium"
                   disabled={isLoading}
                 >
                   Email
@@ -294,11 +279,7 @@ export function OTPForm({
                   role="tab"
                   aria-selected={deliveryMethod === 'phone'}
                   onClick={() => setDeliveryMethod('phone')}
-                  className={`rounded px-3 py-1.5 text-sm font-medium ${
-                    deliveryMethod === 'phone'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
+                  className="auth-tab rounded px-3 py-1.5 text-sm font-medium"
                   disabled={isLoading}
                 >
                   Phone
@@ -329,7 +310,7 @@ export function OTPForm({
                 disabled={isLoading}
                 required
               />
-              <p className="text-xs text-muted-foreground">{copy.phoneHint}</p>
+              <p className="auth-muted text-xs">{copy.phoneHint}</p>
             </div>
           )}
 
@@ -393,7 +374,7 @@ export function OTPForm({
                 autoComplete="one-time-code"
               />
             )}
-            <p className="text-sm text-muted-foreground">{copy.otpSubtext(contactValue)}</p>
+            <p className="auth-muted text-sm">{copy.otpSubtext(contactValue)}</p>
           </div>
 
           <Button type="submit" className="w-full" disabled={isLoading} aria-busy={isLoading}>
@@ -404,7 +385,7 @@ export function OTPForm({
             <button
               type="button"
               onClick={() => setStep('contact')}
-              className="text-primary hover:underline"
+              className="auth-link"
               disabled={isLoading}
             >
               {deliveryMethod === 'email' ? copy.changeEmailLink : copy.changePhoneLink}
@@ -415,7 +396,7 @@ export function OTPForm({
                 void handleSendOTP()
               }}
               disabled={isLoading || resendCountdown > 0}
-              className="text-primary hover:underline disabled:text-muted-foreground disabled:cursor-not-allowed"
+              className="auth-link disabled:cursor-not-allowed"
             >
               {resendCountdown > 0 ? (
                 <span className="flex items-center gap-1">

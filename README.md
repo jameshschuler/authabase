@@ -49,6 +49,14 @@ pnpm add @authabase/react
 npm install react react-dom tailwindcss@^4
 ```
 
+Import package styles once in your app entry:
+
+```tsx
+import '@authabase/react/styles.css'
+```
+
+The components work out of the box with built-in default styles. Overriding the theme is optional.
+
 ## Quick Start
 
 ### 1. Set Up AuthProvider
@@ -208,18 +216,36 @@ Layout container for auth pages.
 />
 ```
 
-## Styling
+## Theming
 
-The library uses Tailwind CSS with custom CSS variables. Customize the theme by modifying CSS variables:
+The library ships with default auth styles, so consumer apps do not need to define shadcn-style theme variables just to render the components.
+
+To match your own brand/theme, override the `--auth-*` variables in your global CSS after importing `@authabase/react/styles.css`.
 
 ```css
 :root {
-  --primary: 0 0% 9%;
-  --destructive: 0 84.2% 60.2%;
-  --radius: 0.5rem;
-  /* ... other variables */
+  --auth-primary: #2563eb;
+  --auth-primary-foreground: #ffffff;
+  --auth-surface: #ffffff;
+  --auth-border: #cbd5e1;
+  --auth-muted-fg: #64748b;
+  --auth-link: #2563eb;
+  --auth-link-hover: #1d4ed8;
+  --auth-danger-bg: #fff1f2;
+  --auth-danger-fg: #be123c;
+  --auth-success-bg: #ecfdf5;
+  --auth-success-fg: #047857;
 }
 ```
+
+Commonly overridden variables:
+
+- `--auth-primary`
+- `--auth-primary-foreground`
+- `--auth-surface`
+- `--auth-border`
+- `--auth-link`
+- `--auth-link-hover`
 
 ## Using with shadcn/ui (Consumer Setup)
 
