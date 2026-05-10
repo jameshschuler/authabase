@@ -7,36 +7,26 @@ import type { AuthUser, OTPFormProps, UseOTPFlowReturn } from '../types'
  * Use this when you want full control over the OTP UI.
  */
 export function useOTPFlow({
-  onSuccess,
-  onError,
-  onRequestOTP,
-  onVerifyOTP,
-  onSubmitStart,
-  onSubmitComplete,
-  onValidationError,
-  mapError,
-  phoneNumber,
-  defaultMethod = 'email',
-  enabledMethods,
-  resendCountdownSeconds = 60,
-  otpLength = 6,
-}: Pick<
-  OTPFormProps,
-  | 'onSuccess'
-  | 'onError'
-  | 'onRequestOTP'
-  | 'onVerifyOTP'
-  | 'onSubmitStart'
-  | 'onSubmitComplete'
-  | 'onValidationError'
-  | 'mapError'
-  | 'phoneNumber'
-  | 'defaultMethod'
-  | 'enabledMethods'
-  | 'resendCountdownSeconds'
-  | 'otpLength'
-> = {}): UseOTPFlowReturn {
-  const { supabase } = useAuth()
+  events,
+  options,
+  strategy,
+}: Pick<OTPFormProps, 'events' | 'options' | 'strategy'> = {}): UseOTPFlowReturn {
+  const { supabase, refreshSession } = useAuth()
+  const onSuccess = events?.onSuccess
+  const onVerified = events?.onVerified
+  const onError = events?.onError
+  const onSubmitStart = events?.onSubmitStart
+  const onSubmitComplete = events?.onSubmitComplete
+  const onValidationError = events?.onValidationError
+  const mapError = events?.mapError
+
+  const phoneNumber = options?.phoneNumber
+  const defaultMethod = options?.defaultMethod ?? 'email'
+  const enabledMethods = options?.enabledMethods
+  const resendCountdownSeconds = options?.resendCountdownSeconds ?? 60
+  const otpLength = options?.otpLength ?? 6
+
+  const customStrategy = strategy?.mode === 'custom' ? strategy : null
   const [step, setStep] = useState<'contact' | 'otp'>('contact')
   const [deliveryMethod, setDeliveryMethod] = useState<'email' | 'phone'>(defaultMethod ?? 'email')
   const [email, setEmail] = useState('')
@@ -93,8 +83,8 @@ export function useOTPFlow({
     onSubmitStart?.()
     setIsLoading(true)
     try {
-      if (onRequestOTP) {
-        await onRequestOTP({
+      if (customStrategy) {
+        await customStrategy.requestOTP({
           method: deliveryMethod,
           email: deliveryMethod === 'email' ? email : undefined,
           phone: deliveryMethod === 'phone' ? normalizePhone(phone) : undefined,
@@ -155,16 +145,24 @@ export function useOTPFlow({
     onSubmitStart?.()
     setIsLoading(true)
     try {
-      if (onVerifyOTP) {
-        const user = await onVerifyOTP({
-          method: deliveryMethod,
-          email: deliveryMethod === 'email' ? email : undefined,
-          phone: deliveryMethod === 'phone' ? normalizePhone(phone) : undefined,
+      const verifiedPayload = {
+        method: deliveryMethod,
+        email: deliveryMethod === 'email' ? email : undefined,
+        phone: deliveryMethod === 'phone' ? normalizePhone(phone) : undefined,
+      } as const
+
+      if (customStrategy) {
+        const user = await customStrategy.verifyOTP({
+          method: verifiedPayload.method,
+          email: verifiedPayload.email,
+          phone: verifiedPayload.phone,
           token: otp,
         })
+        await refreshSession?.()
         if (user) {
           onSuccess?.(user)
         }
+        onVerified?.(verifiedPayload)
       } else {
         if (!supabase) {
           throw new Error('Supabase client not initialized')
@@ -188,6 +186,7 @@ export function useOTPFlow({
           user_metadata: data.user?.user_metadata,
         }
         onSuccess?.(user)
+        onVerified?.(verifiedPayload)
       }
     } catch (error) {
       const err = error instanceof Error ? error : new Error('Failed to verify OTP')

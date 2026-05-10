@@ -141,7 +141,16 @@ describe('Auth Flows', () => {
       email: 'otp@example.com',
     })
 
-    render(<OTPForm otpInputMode="single" onRequestOTP={onRequestOTP} onVerifyOTP={onVerifyOTP} />)
+    render(
+      <OTPForm
+        options={{ otpInputMode: 'single' }}
+        strategy={{
+          mode: 'custom',
+          requestOTP: onRequestOTP,
+          verifyOTP: onVerifyOTP,
+        }}
+      />
+    )
 
     await user.type(screen.getByLabelText('Email'), 'otp@example.com')
     await user.click(screen.getByRole('button', { name: 'Send OTP' }))
@@ -176,11 +185,13 @@ describe('Auth Flows', () => {
 
     render(
       <OTPForm
-        otpInputMode="single"
-        onRequestOTP={onRequestOTP}
-        onVerifyOTP={onVerifyOTP}
-        onVerified={onVerified}
-        onSuccess={onSuccess}
+        options={{ otpInputMode: 'single' }}
+        strategy={{
+          mode: 'custom',
+          requestOTP: onRequestOTP,
+          verifyOTP: onVerifyOTP,
+        }}
+        events={{ onVerified, onSuccess }}
       />
     )
 

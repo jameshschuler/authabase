@@ -148,15 +148,15 @@ function AuthDemo({
 
   return (
     <AuthContainer title="Authentication Demo" subtitle="Try different authentication methods">
-      <div className="mb-6 flex flex-wrap gap-2 border-b border-[var(--auth-border)] pb-2">
+      <div className="mb-6 flex flex-wrap gap-2 border-b border-(--auth-border) pb-2">
         {availableTabs.map((item) => (
           <button
             key={item.id}
             onClick={() => setTab(item.id)}
             className={`whitespace-nowrap px-4 py-2 font-medium transition-colors ${
               tab === item.id
-                ? 'border-b-2 border-[var(--auth-primary)] text-[var(--auth-primary)]'
-                : 'text-[var(--auth-muted-fg)] hover:text-[var(--auth-fg)]'
+                ? 'border-b-2 border-(--auth-primary) text-(--auth-primary)'
+                : 'text-(--auth-muted-fg) hover:text-(--auth-fg)'
             }`}
           >
             {item.label}
@@ -184,25 +184,34 @@ function AuthDemo({
 
       {tab === 'otp' && (
         <OTPForm
-          onSuccess={(user) =>
-            alert(`Logged in with OTP as ${user.email || user.phone || 'verified user'}`)
-          }
-          onVerified={() => {
-            if (demoState.useCookieSessionHydration) {
-              alert('OTP verified. Session cookie set; user is hydrated via getCurrentUser.')
-            }
+          events={{
+            onSuccess: (user) =>
+              alert(`Logged in with OTP as ${user.email || user.phone || 'verified user'}`),
+            onVerified: () => {
+              if (demoState.useCookieSessionHydration) {
+                alert('OTP verified. Session cookie set; user is hydrated via getCurrentUser.')
+              }
+            },
+            onError: (error) => alert(`Error: ${error.message}`),
           }}
-          onError={(error) => alert(`Error: ${error.message}`)}
-          onRequestOTP={demoState.useCustomOtpApi ? mockRequestOTP : undefined}
-          onVerifyOTP={demoState.useCustomOtpApi ? mockVerifyOTP : undefined}
-          enabledMethods={demoState.otpMethods}
+          strategy={
+            demoState.useCustomOtpApi
+              ? {
+                  mode: 'custom',
+                  requestOTP: mockRequestOTP,
+                  verifyOTP: mockVerifyOTP,
+                }
+              : undefined
+          }
+          options={{
+            enabledMethods: demoState.otpMethods,
+            defaultMethod:
+              demoState.otpMethods.phone && !demoState.otpMethods.email ? 'phone' : 'email',
+          }}
           copy={{
             phoneHint: demoState.otpHintText,
             sendOtpButton: demoState.otpSendText,
           }}
-          defaultMethod={
-            demoState.otpMethods.phone && !demoState.otpMethods.email ? 'phone' : 'email'
-          }
         />
       )}
 
@@ -244,9 +253,11 @@ export function ProfileDemo({
   const { user, isLoading, error, signOut, refreshSession } = useAuth()
 
   const handleLogout = async () => {
-    if (demoState.useCookieSessionHydration && demoState.currentUserApiUrl) {
-      const res = await fetch(demoState.currentUserApiUrl, {
-        method: 'DELETE',
+    const logoutUrl = demoState.logoutApiUrl || demoState.currentUserApiUrl
+
+    if (demoState.useCookieSessionHydration && logoutUrl) {
+      const res = await fetch(logoutUrl, {
+        method: 'POST',
         credentials: 'include',
       })
 
@@ -255,8 +266,8 @@ export function ProfileDemo({
         ...prev,
         currentUser: {
           timestamp: new Date().toISOString(),
-          method: 'DELETE',
-          url: demoState.currentUserApiUrl,
+          method: 'POST',
+          url: logoutUrl,
           status: res.status,
           ok: res.ok,
           body: responseBody,
@@ -278,7 +289,7 @@ export function ProfileDemo({
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <p className="text-[var(--auth-muted-fg)]">Loading...</p>
+        <p className="text-(--auth-muted-fg)">Loading...</p>
       </div>
     )
   }
@@ -292,34 +303,34 @@ export function ProfileDemo({
           className="w-full shadow-md"
         >
           <div className="space-y-5">
-            <div className="flex items-center justify-between gap-3 rounded-xl border border-[var(--auth-border)] bg-[var(--auth-surface)] px-4 py-3">
+            <div className="flex items-center justify-between gap-3 rounded-xl border border-(--auth-border) bg-(--auth-surface) px-4 py-3">
               <div>
-                <p className="text-xs font-medium uppercase tracking-[0.16em] text-[var(--auth-muted-fg)]">
+                <p className="text-xs font-medium uppercase tracking-[0.16em] text-(--auth-muted-fg)">
                   Logged In
                 </p>
-                <p className="mt-1 text-sm text-[var(--auth-fg)]">
+                <p className="mt-1 text-sm text-(--auth-fg)">
                   Cookie-backed or Supabase-backed session detected.
                 </p>
               </div>
-              <span className="inline-flex flex-none items-center whitespace-nowrap rounded-full border border-[color-mix(in_srgb,var(--auth-primary)_35%,transparent)] bg-[color-mix(in_srgb,var(--auth-primary)_10%,var(--auth-surface))] px-4 py-1.5 text-xs font-semibold leading-none text-[var(--auth-primary)]">
+              <span className="inline-flex flex-none items-center whitespace-nowrap rounded-full border border-[color-mix(in_srgb,var(--auth-primary)_35%,transparent)] bg-[color-mix(in_srgb,var(--auth-primary)_10%,var(--auth-surface))] px-4 py-1.5 text-xs font-semibold leading-none text-(--auth-primary)">
                 Session Active
               </span>
             </div>
 
-            <div className="grid gap-3 rounded-xl border border-[var(--auth-border)] bg-[var(--auth-surface)] px-4 py-4 sm:grid-cols-2">
+            <div className="grid gap-3 rounded-xl border border-(--auth-border) bg-(--auth-surface) px-4 py-4 sm:grid-cols-2">
               <div className="rounded-lg bg-[color-mix(in_srgb,var(--auth-surface)_92%,var(--auth-border))] p-3">
-                <p className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--auth-muted-fg)]">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-(--auth-muted-fg)">
                   Email
                 </p>
-                <p className="mt-1 break-words font-medium text-[var(--auth-fg)]">
+                <p className="mt-1 wrap-break-word font-medium text-(--auth-fg)">
                   {user.email || 'No email provided'}
                 </p>
               </div>
               <div className="rounded-lg bg-[color-mix(in_srgb,var(--auth-surface)_92%,var(--auth-border))] p-3">
-                <p className="text-xs font-medium uppercase tracking-[0.14em] text-[var(--auth-muted-fg)]">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-(--auth-muted-fg)">
                   User ID
                 </p>
-                <p className="mt-1 break-all font-mono text-sm text-[var(--auth-fg)]">{user.id}</p>
+                <p className="mt-1 break-all font-mono text-sm text-(--auth-fg)">{user.id}</p>
               </div>
             </div>
 
@@ -328,7 +339,7 @@ export function ProfileDemo({
                 onClick={() => {
                   void handleLogout()
                 }}
-                className="w-full rounded-md bg-[var(--auth-danger-fg)] px-4 py-2.5 text-[var(--auth-primary-foreground)] transition-opacity hover:opacity-90 sm:flex-1"
+                className="w-full rounded-md bg-(--auth-danger-fg) px-4 py-2.5 text-(--auth-primary-foreground) transition-opacity hover:opacity-90 sm:flex-1"
               >
                 Log Out
               </button>

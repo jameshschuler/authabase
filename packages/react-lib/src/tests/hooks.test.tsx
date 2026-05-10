@@ -358,7 +358,7 @@ describe('useOTPFlow', () => {
 
   it('handleSendOTP sets error when email is empty', async () => {
     const onValidationError = vi.fn()
-    const { result } = renderHook(() => useOTPFlow({ onValidationError }))
+    const { result } = renderHook(() => useOTPFlow({ events: { onValidationError } }))
     await act(async () => {
       await result.current.handleSendOTP()
     })
@@ -379,7 +379,7 @@ describe('useOTPFlow', () => {
   })
 
   it('handleSendOTP uses resendCountdownSeconds', async () => {
-    const { result } = renderHook(() => useOTPFlow({ resendCountdownSeconds: 30 }))
+    const { result } = renderHook(() => useOTPFlow({ options: { resendCountdownSeconds: 30 } }))
     act(() => result.current.setEmail('a@b.com'))
     await act(async () => {
       await result.current.handleSendOTP()
@@ -389,7 +389,9 @@ describe('useOTPFlow', () => {
 
   it('handleVerifyOTP sets error when otp is wrong length', async () => {
     const onValidationError = vi.fn()
-    const { result } = renderHook(() => useOTPFlow({ otpLength: 6, onValidationError }))
+    const { result } = renderHook(() =>
+      useOTPFlow({ options: { otpLength: 6 }, events: { onValidationError } })
+    )
     act(() => {
       result.current.setEmail('a@b.com')
       result.current.setOtp('123') // too short
@@ -405,7 +407,7 @@ describe('useOTPFlow', () => {
 
   it('handleVerifyOTP calls onSuccess on valid OTP', async () => {
     const onSuccess = vi.fn()
-    const { result } = renderHook(() => useOTPFlow({ onSuccess }))
+    const { result } = renderHook(() => useOTPFlow({ events: { onSuccess } }))
     act(() => {
       result.current.setEmail('a@b.com')
       result.current.setOtp('123456')
@@ -448,7 +450,7 @@ describe('useOTPFlow', () => {
 
   it('validates phone format for phone method', async () => {
     const onValidationError = vi.fn()
-    const { result } = renderHook(() => useOTPFlow({ onValidationError }))
+    const { result } = renderHook(() => useOTPFlow({ events: { onValidationError } }))
     act(() => {
       result.current.setDeliveryMethod('phone')
       result.current.setPhone('not-a-phone')
@@ -481,7 +483,9 @@ describe('useOTPFlow', () => {
       supabase: null,
     } as any)
     const onRequestOTP = vi.fn().mockResolvedValue(undefined)
-    const { result } = renderHook(() => useOTPFlow({ onRequestOTP }))
+    const { result } = renderHook(() =>
+      useOTPFlow({ strategy: { mode: 'custom', requestOTP: onRequestOTP, verifyOTP: vi.fn() } })
+    )
     act(() => result.current.setEmail('a@b.com'))
     await act(async () => {
       await result.current.handleSendOTP()
@@ -504,7 +508,12 @@ describe('useOTPFlow', () => {
       email: 'a@b.com',
       user_metadata: {},
     })
-    const { result } = renderHook(() => useOTPFlow({ onVerifyOTP, onSuccess }))
+    const { result } = renderHook(() =>
+      useOTPFlow({
+        strategy: { mode: 'custom', requestOTP: vi.fn(), verifyOTP: onVerifyOTP },
+        events: { onSuccess },
+      })
+    )
     act(() => {
       result.current.setEmail('a@b.com')
       result.current.setOtp('123456')

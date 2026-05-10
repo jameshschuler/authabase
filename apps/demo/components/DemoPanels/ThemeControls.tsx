@@ -24,8 +24,8 @@ export function ThemeControls({
   const themePresetButtonClass = (preset: ThemePreset) =>
     `rounded border px-3 py-1.5 text-xs font-medium transition-colors ${
       activeThemePreset === preset
-        ? 'border-[var(--auth-primary)] bg-[var(--auth-primary)] text-[var(--auth-primary-foreground)]'
-        : 'border-[var(--auth-border)] bg-[var(--auth-surface)] text-[var(--auth-fg)] hover:bg-[color-mix(in_srgb,var(--auth-surface)_80%,var(--auth-border))]'
+        ? 'border-(--auth-primary) bg-(--auth-primary) text-(--auth-primary-foreground)'
+        : 'border-(--auth-border) bg-(--auth-surface) text-(--auth-fg) hover:bg-[color-mix(in_srgb,var(--auth-surface)_80%,var(--auth-border))]'
     }`
 
   const setThemeValue = (key: keyof AuthTheme, value: string) => {
@@ -66,8 +66,8 @@ export function ThemeControls({
 
   return (
     <div className={panelCardClass}>
-      <h2 className="mb-3 text-sm font-semibold text-[var(--auth-fg)]">Theme Controls</h2>
-      <p className="mb-3 text-xs text-[var(--auth-muted-fg)]">
+      <h2 className="mb-3 text-sm font-semibold text-(--auth-fg)">Theme Controls</h2>
+      <p className="mb-3 text-xs text-(--auth-muted-fg)">
         Change the library&apos;s <span className="font-mono">--auth-*</span> variables live and
         copy the generated CSS into your app.
       </p>
@@ -118,123 +118,123 @@ export function ThemeControls({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-        <div className="flex flex-col gap-1 text-sm text-[var(--auth-fg)]">
+        <div className="flex flex-col gap-1 text-sm text-(--auth-fg)">
           <label htmlFor="themeBackground">Background</label>
           <input
             id="themeBackground"
             type="color"
             value={demoState.theme.background}
             onChange={(e) => setThemeValue('background', e.target.value)}
-            className="h-10 w-full rounded border border-[var(--auth-border)] bg-[var(--auth-surface)] p-1"
+            className="h-10 w-full rounded border border-(--auth-border) bg-(--auth-surface) p-1"
           />
         </div>
-        <div className="flex flex-col gap-1 text-sm text-[var(--auth-fg)]">
+        <div className="flex flex-col gap-1 text-sm text-(--auth-fg)">
           <label htmlFor="themeForeground">Foreground</label>
           <input
             id="themeForeground"
             type="color"
             value={demoState.theme.foreground}
             onChange={(e) => setThemeValue('foreground', e.target.value)}
-            className="h-10 w-full rounded border border-[var(--auth-border)] bg-[var(--auth-surface)] p-1"
+            className="h-10 w-full rounded border border-(--auth-border) bg-(--auth-surface) p-1"
           />
         </div>
-        <div className="flex flex-col gap-1 text-sm text-[var(--auth-fg)]">
+        <div className="flex flex-col gap-1 text-sm text-(--auth-fg)">
           <label htmlFor="themePrimary">Primary</label>
           <input
             id="themePrimary"
             type="color"
             value={demoState.theme.primary}
             onChange={(e) => setThemeValue('primary', e.target.value)}
-            className="h-10 w-full rounded border border-[var(--auth-border)] bg-[var(--auth-surface)] p-1"
+            className="h-10 w-full rounded border border-(--auth-border) bg-(--auth-surface) p-1"
           />
         </div>
-        <div className="flex flex-col gap-1 text-sm text-[var(--auth-fg)]">
+        <div className="flex flex-col gap-1 text-sm text-(--auth-fg)">
           <label htmlFor="themePrimaryForeground">Primary Foreground</label>
           <input
             id="themePrimaryForeground"
             type="color"
             value={demoState.theme.primaryForeground}
             onChange={(e) => setThemeValue('primaryForeground', e.target.value)}
-            className="h-10 w-full rounded border border-[var(--auth-border)] bg-[var(--auth-surface)] p-1"
+            className="h-10 w-full rounded border border-(--auth-border) bg-(--auth-surface) p-1"
           />
         </div>
-        <div className="flex flex-col gap-1 text-sm text-[var(--auth-fg)]">
+        <div className="flex flex-col gap-1 text-sm text-(--auth-fg)">
           <label htmlFor="themeSurface">Surface</label>
           <input
             id="themeSurface"
             type="color"
             value={demoState.theme.surface}
             onChange={(e) => setThemeValue('surface', e.target.value)}
-            className="h-10 w-full rounded border border-[var(--auth-border)] bg-[var(--auth-surface)] p-1"
+            className="h-10 w-full rounded border border-(--auth-border) bg-(--auth-surface) p-1"
           />
         </div>
-        <div className="flex flex-col gap-1 text-sm text-[var(--auth-fg)]">
+        <div className="flex flex-col gap-1 text-sm text-(--auth-fg)">
           <label htmlFor="themeBorder">Border</label>
           <input
             id="themeBorder"
             type="color"
             value={demoState.theme.border}
             onChange={(e) => setThemeValue('border', e.target.value)}
-            className="h-10 w-full rounded border border-[var(--auth-border)] bg-[var(--auth-surface)] p-1"
+            className="h-10 w-full rounded border border-(--auth-border) bg-(--auth-surface) p-1"
           />
         </div>
-        <div className="flex flex-col gap-1 text-sm text-[var(--auth-fg)]">
+        <div className="flex flex-col gap-1 text-sm text-(--auth-fg)">
           <label htmlFor="themeLink">Link</label>
           <input
             id="themeLink"
             type="color"
             value={demoState.theme.link}
             onChange={(e) => setThemeValue('link', e.target.value)}
-            className="h-10 w-full rounded border border-[var(--auth-border)] bg-[var(--auth-surface)] p-1"
+            className="h-10 w-full rounded border border-(--auth-border) bg-(--auth-surface) p-1"
           />
         </div>
-        <div className="flex flex-col gap-1 text-sm text-[var(--auth-fg)]">
+        <div className="flex flex-col gap-1 text-sm text-(--auth-fg)">
           <label htmlFor="themeMuted">Muted Text</label>
           <input
             id="themeMuted"
             type="color"
             value={demoState.theme.mutedForeground}
             onChange={(e) => setThemeValue('mutedForeground', e.target.value)}
-            className="h-10 w-full rounded border border-[var(--auth-border)] bg-[var(--auth-surface)] p-1"
+            className="h-10 w-full rounded border border-(--auth-border) bg-(--auth-surface) p-1"
           />
         </div>
-        <div className="flex flex-col gap-1 text-sm text-[var(--auth-fg)]">
+        <div className="flex flex-col gap-1 text-sm text-(--auth-fg)">
           <label htmlFor="themeDangerBg">Error Background</label>
           <input
             id="themeDangerBg"
             type="color"
             value={demoState.theme.dangerBackground}
             onChange={(e) => setThemeValue('dangerBackground', e.target.value)}
-            className="h-10 w-full rounded border border-[var(--auth-border)] bg-[var(--auth-surface)] p-1"
+            className="h-10 w-full rounded border border-(--auth-border) bg-(--auth-surface) p-1"
           />
         </div>
-        <div className="flex flex-col gap-1 text-sm text-[var(--auth-fg)]">
+        <div className="flex flex-col gap-1 text-sm text-(--auth-fg)">
           <label htmlFor="themeDangerFg">Error Text</label>
           <input
             id="themeDangerFg"
             type="color"
             value={demoState.theme.dangerForeground}
             onChange={(e) => setThemeValue('dangerForeground', e.target.value)}
-            className="h-10 w-full rounded border border-[var(--auth-border)] bg-[var(--auth-surface)] p-1"
+            className="h-10 w-full rounded border border-(--auth-border) bg-(--auth-surface) p-1"
           />
         </div>
-        <div className="flex flex-col gap-1 text-sm text-[var(--auth-fg)]">
+        <div className="flex flex-col gap-1 text-sm text-(--auth-fg)">
           <label htmlFor="themeSuccessBg">Success Background</label>
           <input
             id="themeSuccessBg"
             type="color"
             value={demoState.theme.successBackground}
             onChange={(e) => setThemeValue('successBackground', e.target.value)}
-            className="h-10 w-full rounded border border-[var(--auth-border)] bg-[var(--auth-surface)] p-1"
+            className="h-10 w-full rounded border border-(--auth-border) bg-(--auth-surface) p-1"
           />
         </div>
       </div>
 
       <div className="mt-4">
-        <p className="mb-2 text-xs font-medium uppercase tracking-widest text-[var(--auth-muted-fg)]">
+        <p className="mb-2 text-xs font-medium uppercase tracking-widest text-(--auth-muted-fg)">
           Copy This CSS
         </p>
-        <pre className="overflow-x-auto rounded-lg border border-[var(--auth-border)] bg-[var(--auth-fg)] p-4 text-xs text-[var(--auth-surface)]">
+        <pre className="overflow-x-auto rounded-lg border border-(--auth-border) bg-(--auth-fg) p-4 text-xs text-(--auth-surface)">
           <code>{themeCssSnippet}</code>
         </pre>
       </div>

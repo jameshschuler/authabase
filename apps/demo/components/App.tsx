@@ -107,24 +107,24 @@ export default function App() {
 
   return (
     <div
-      className="min-h-screen bg-[var(--auth-bg)] px-4 py-6 text-[var(--auth-fg)] sm:px-6"
+      className="min-h-screen bg-(--auth-bg) px-4 py-6 text-(--auth-fg) sm:px-6"
       style={demoThemeStyle}
     >
       <div className="w-full space-y-8">
-        <header className="rounded-xl border border-[var(--auth-border)] bg-[var(--auth-surface)] px-5 py-4 shadow-sm">
+        <header className="rounded-xl border border-(--auth-border) bg-(--auth-surface) px-5 py-4 shadow-sm">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-xs font-medium uppercase tracking-[0.18em] text-[var(--auth-muted-fg)]">
+              <p className="text-xs font-medium uppercase tracking-[0.18em] text-(--auth-muted-fg)">
                 AuthABase
               </p>
-              <h1 className="text-lg font-semibold text-[var(--auth-fg)]">@authabase/react Demo</h1>
+              <h1 className="text-lg font-semibold text-(--auth-fg)">@authabase/react Demo</h1>
             </div>
             <nav className="flex flex-wrap gap-2 text-xs sm:text-sm">
               <a
                 href={links.npm}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded border border-[var(--auth-border)] px-3 py-1.5 hover:bg-[color-mix(in_srgb,var(--auth-surface)_80%,var(--auth-border))]"
+                className="rounded border border-(--auth-border) px-3 py-1.5 hover:bg-[color-mix(in_srgb,var(--auth-surface)_80%,var(--auth-border))]"
               >
                 npm
               </a>
@@ -132,7 +132,7 @@ export default function App() {
                 href={links.github}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded border border-[var(--auth-border)] px-3 py-1.5 hover:bg-[color-mix(in_srgb,var(--auth-surface)_80%,var(--auth-border))]"
+                className="rounded border border-(--auth-border) px-3 py-1.5 hover:bg-[color-mix(in_srgb,var(--auth-surface)_80%,var(--auth-border))]"
               >
                 GitHub
               </a>
@@ -140,7 +140,7 @@ export default function App() {
                 href={links.readme}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded border border-[var(--auth-border)] px-3 py-1.5 hover:bg-[color-mix(in_srgb,var(--auth-surface)_80%,var(--auth-border))]"
+                className="rounded border border-(--auth-border) px-3 py-1.5 hover:bg-[color-mix(in_srgb,var(--auth-surface)_80%,var(--auth-border))]"
               >
                 README
               </a>
@@ -148,7 +148,7 @@ export default function App() {
                 href={links.contributing}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded border border-[var(--auth-border)] px-3 py-1.5 hover:bg-[color-mix(in_srgb,var(--auth-surface)_80%,var(--auth-border))]"
+                className="rounded border border-(--auth-border) px-3 py-1.5 hover:bg-[color-mix(in_srgb,var(--auth-surface)_80%,var(--auth-border))]"
               >
                 Contributing
               </a>
@@ -156,7 +156,7 @@ export default function App() {
                 href={links.changesets}
                 target="_blank"
                 rel="noreferrer"
-                className="rounded border border-[var(--auth-border)] px-3 py-1.5 hover:bg-[color-mix(in_srgb,var(--auth-surface)_80%,var(--auth-border))]"
+                className="rounded border border-(--auth-border) px-3 py-1.5 hover:bg-[color-mix(in_srgb,var(--auth-surface)_80%,var(--auth-border))]"
               >
                 Changesets
               </a>
@@ -164,12 +164,12 @@ export default function App() {
           </div>
         </header>
 
-        <section className="rounded-xl border border-[var(--auth-border)] bg-[var(--auth-surface)] px-5 py-8 shadow-sm">
-          <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-[var(--auth-muted-fg)]">
+        <section className="rounded-xl border border-(--auth-border) bg-(--auth-surface) px-5 py-8 shadow-sm">
+          <p className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-(--auth-muted-fg)">
             React Authentication Component Library
           </p>
           <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">@authabase/react</h2>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-[var(--auth-muted-fg)] sm:text-base">
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-(--auth-muted-fg) sm:text-base">
             Reusable React authentication components with Supabase integration, shadcn-style UI, and
             configurable auth methods. Use the live controls below to test flows, customize copy,
             and preview themes before integrating.
@@ -197,11 +197,11 @@ export default function App() {
           </aside>
         </div>
 
-        <footer className="rounded-xl border border-[var(--auth-border)] bg-[var(--auth-surface)] px-5 py-4 text-sm text-[var(--auth-muted-fg)] shadow-sm">
+        <footer className="rounded-xl border border-(--auth-border) bg-(--auth-surface) px-5 py-4 text-sm text-(--auth-muted-fg) shadow-sm">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <p>
-              Built with <span className="font-medium text-[var(--auth-fg)]">@authabase/react</span>{' '}
-              for production-ready authentication UX.
+              Built with <span className="font-medium text-(--auth-fg)">@authabase/react</span> for
+              production-ready authentication UX.
             </p>
             <div className="flex flex-wrap gap-3">
               <a href={links.npm} target="_blank" rel="noreferrer" className="hover:underline">

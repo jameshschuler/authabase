@@ -139,15 +139,16 @@ npm run dev --workspace @authabase/demo
 
 ### Configure demo URLs
 
-Copy `apps/demo/.env.example` to `apps/demo/.env` and set the three API URLs used by the demo controls:
+Copy `apps/demo/.env.example` to `apps/demo/.env` and set the API URLs used by the demo controls:
 
 ```bash
 VITE_DEMO_OTP_API_URL=
 VITE_DEMO_OTP_VERIFY_API_URL=
 VITE_DEMO_CURRENT_USER_API_URL=
+VITE_DEMO_LOGOUT_API_URL=
 ```
 
-The demo reads these values on startup, so restart the Vite dev server after changing them. The OTP request and verify calls are sent with `credentials: 'include'`, which lets your backend set an HttpOnly cookie during verification. If you enable the cookie-session flow in the demo, the app also calls the current-user endpoint to hydrate `useAuth().user`.
+The demo reads these values on startup, so restart the Vite dev server after changing them. The OTP request and verify calls are sent with `credentials: 'include'`, which lets your backend set an HttpOnly cookie during verification. If you enable the cookie-session flow in the demo, the app calls the current-user endpoint to hydrate `useAuth().user`. For logout in cookie-session mode, the demo uses `VITE_DEMO_LOGOUT_API_URL` when provided and falls back to `VITE_DEMO_CURRENT_USER_API_URL`.
 
 ### What the demo shows
 
@@ -179,7 +180,7 @@ User registration with password strength indicator.
 One-Time Password authentication flow.
 
 ```tsx
-<OTPForm onSuccess={(user) => {}} onError={(error) => {}} />
+<OTPForm events={{ onSuccess: (user) => {}, onError: (error) => {} }} />
 ```
 
 ### ForgotPasswordForm

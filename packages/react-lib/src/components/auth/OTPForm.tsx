@@ -30,27 +30,26 @@ const DEFAULT_COPY = {
   noMethodsMessage: 'No OTP methods are enabled. Enable email or phone OTP.',
 }
 
-export function OTPForm({
-  onSuccess,
-  onVerified,
-  onError,
-  onRequestOTP,
-  onVerifyOTP,
-  phoneNumber,
-  defaultMethod = 'email',
-  enabledMethods,
-  resendCountdownSeconds = 60,
-  otpLength = 6,
-  otpInputMode = 'segmented',
-  autoSubmitOnComplete = false,
-  onSubmitStart,
-  onSubmitComplete,
-  onValidationError,
-  mapError,
-  copy: copyProp,
-}: OTPFormProps) {
+export function OTPForm({ events, options, strategy, copy: copyProp }: OTPFormProps) {
   const { supabase, refreshSession } = useAuth()
   const copy = { ...DEFAULT_COPY, ...copyProp }
+  const onSuccess = events?.onSuccess
+  const onVerified = events?.onVerified
+  const onError = events?.onError
+  const onSubmitStart = events?.onSubmitStart
+  const onSubmitComplete = events?.onSubmitComplete
+  const onValidationError = events?.onValidationError
+  const mapError = events?.mapError
+
+  const phoneNumber = options?.phoneNumber
+  const defaultMethod = options?.defaultMethod ?? 'email'
+  const enabledMethods = options?.enabledMethods
+  const resendCountdownSeconds = options?.resendCountdownSeconds ?? 60
+  const otpLength = options?.otpLength ?? 6
+  const otpInputMode = options?.otpInputMode ?? 'segmented'
+  const autoSubmitOnComplete = options?.autoSubmitOnComplete ?? false
+
+  const customStrategy = strategy?.mode === 'custom' ? strategy : null
   const [step, setStep] = useState<'contact' | 'otp'>('contact')
   const [deliveryMethod, setDeliveryMethod] = useState<'email' | 'phone'>(defaultMethod)
   const [email, setEmail] = useState('')
@@ -110,8 +109,8 @@ export function OTPForm({
     onSubmitStart?.()
     setIsLoading(true)
     try {
-      if (onRequestOTP) {
-        await onRequestOTP({
+      if (customStrategy) {
+        await customStrategy.requestOTP({
           method: deliveryMethod,
           email: deliveryMethod === 'email' ? email : undefined,
           phone: deliveryMethod === 'phone' ? normalizePhone(phone) : undefined,
@@ -184,8 +183,8 @@ export function OTPForm({
         phone: deliveryMethod === 'phone' ? normalizePhone(phone) : undefined,
       } as const
 
-      if (onVerifyOTP) {
-        const user = await onVerifyOTP({
+      if (customStrategy) {
+        const user = await customStrategy.verifyOTP({
           method: verifiedPayload.method,
           email: verifiedPayload.email,
           phone: verifiedPayload.phone,

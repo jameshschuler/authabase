@@ -166,6 +166,40 @@ export interface OTPVerifiedPayload {
   phone?: string
 }
 
+export interface OTPFormEvents extends FormLifecycleProps {
+  onSuccess?: (user: AuthUser) => void
+  /** Called after OTP verification succeeds, even when no user object is returned. */
+  onVerified?: (payload: OTPVerifiedPayload) => void
+  onError?: (error: Error) => void
+}
+
+export interface OTPFormOptions {
+  phoneNumber?: string
+  defaultMethod?: 'email' | 'phone'
+  enabledMethods?: {
+    email?: boolean
+    phone?: boolean
+  }
+  /** Seconds before the resend button re-enables (default: 60). */
+  resendCountdownSeconds?: number
+  /** Number of digits in the OTP code (default: 6). */
+  otpLength?: number
+  /** Choose OTP input UI: segmented boxes (default) or a classic single input field. */
+  otpInputMode?: 'segmented' | 'single'
+  /** Automatically verify when the user enters the last digit. */
+  autoSubmitOnComplete?: boolean
+}
+
+export type OTPFormStrategy =
+  | {
+      mode?: 'supabase'
+    }
+  | {
+      mode: 'custom'
+      requestOTP: (payload: OTPRequestPayload) => Promise<void> | void
+      verifyOTP: (payload: OTPVerifyPayload) => Promise<AuthUser | void> | AuthUser | void
+    }
+
 // ─── Form prop interfaces ─────────────────────────────────────────────────────
 
 export interface LoginFormProps extends FormLifecycleProps {
@@ -221,36 +255,10 @@ export interface SignupFormProps extends FormLifecycleProps, PasswordPolicyProps
   copy?: SignupFormCopy
 }
 
-export interface OTPFormProps extends FormLifecycleProps {
-  onSuccess?: (user: AuthUser) => void
-  /** Called after OTP verification succeeds, even when no user object is returned. */
-  onVerified?: (payload: OTPVerifiedPayload) => void
-  onError?: (error: Error) => void
-  /**
-   * Optional callback to send/request OTP using your own backend.
-   * When provided, the component will not call `supabase.auth.signInWithOtp`.
-   */
-  onRequestOTP?: (payload: OTPRequestPayload) => Promise<void> | void
-  /**
-   * Optional callback to verify OTP using your own backend.
-   * When provided, the component will not call `supabase.auth.verifyOtp`.
-   * Return a user to trigger `onSuccess`. If no user is returned, `onVerified` still fires.
-   */
-  onVerifyOTP?: (payload: OTPVerifyPayload) => Promise<AuthUser | void> | AuthUser | void
-  phoneNumber?: string
-  defaultMethod?: 'email' | 'phone'
-  enabledMethods?: {
-    email?: boolean
-    phone?: boolean
-  }
-  /** Seconds before the resend button re-enables (default: 60). */
-  resendCountdownSeconds?: number
-  /** Number of digits in the OTP code (default: 6). */
-  otpLength?: number
-  /** Choose OTP input UI: segmented boxes (default) or a classic single input field. */
-  otpInputMode?: 'segmented' | 'single'
-  /** Automatically verify when the user enters the last digit. */
-  autoSubmitOnComplete?: boolean
+export interface OTPFormProps {
+  events?: OTPFormEvents
+  options?: OTPFormOptions
+  strategy?: OTPFormStrategy
   /** Override any displayed text. */
   copy?: OTPFormCopy
 }

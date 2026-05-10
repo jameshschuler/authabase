@@ -93,8 +93,8 @@ export function PresetsSection({ demoState, setDemoState }: DemoControlsStatePro
   const presetButtonClass = (preset: ConfigPreset) =>
     `rounded border px-3 py-1.5 text-xs font-medium transition-colors ${
       activePreset === preset
-        ? 'border-[var(--auth-primary)] bg-[var(--auth-primary)] text-[var(--auth-primary-foreground)]'
-        : 'border-[var(--auth-border)] bg-[var(--auth-surface)] text-[var(--auth-fg)] hover:bg-[color-mix(in_srgb,var(--auth-surface)_80%,var(--auth-border))]'
+        ? 'border-(--auth-primary) bg-(--auth-primary) text-(--auth-primary-foreground)'
+        : 'border-(--auth-border) bg-(--auth-surface) text-(--auth-fg) hover:bg-[color-mix(in_srgb,var(--auth-surface)_80%,var(--auth-border))]'
     }`
 
   return (

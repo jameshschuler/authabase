@@ -116,13 +116,13 @@ SignupForm supports:
 
 OTPForm supports both Supabase-backed OTP and custom backend callbacks.
 
-- onRequestOTP(payload)
-- onVerifyOTP(payload)
-- enabledMethods for OTP delivery: email, phone
-- resendCountdownSeconds
-- otpLength
-- otpInputMode: segmented (default) or single
-- autoSubmitOnComplete
+- strategy.mode: supabase (default) or custom
+- strategy.requestOTP(payload) and strategy.verifyOTP(payload) for custom mode
+- options.enabledMethods for OTP delivery: email, phone
+- options.resendCountdownSeconds
+- options.otpLength
+- options.otpInputMode: segmented (default) or single
+- options.autoSubmitOnComplete
 
 Example with custom OTP backend:
 
@@ -132,28 +132,33 @@ import { OTPForm } from '@authabase/react'
 export function CustomOtp() {
   return (
     <OTPForm
-      otpInputMode="segmented"
-      otpLength={6}
-      onRequestOTP={async (payload) => {
-        await fetch('https://api.example.com/otp/request', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        })
+      options={{
+        otpInputMode: 'segmented',
+        otpLength: 6,
       }}
-      onVerifyOTP={async (payload) => {
-        const res = await fetch('https://api.example.com/otp/verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        })
-        if (!res.ok) throw new Error('OTP verification failed')
-        return (await res.json()) as {
-          id: string
-          email?: string
-          phone?: string
-          user_metadata?: Record<string, unknown>
-        }
+      strategy={{
+        mode: 'custom',
+        requestOTP: async (payload) => {
+          await fetch('https://api.example.com/otp/request', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          })
+        },
+        verifyOTP: async (payload) => {
+          const res = await fetch('https://api.example.com/otp/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          })
+          if (!res.ok) throw new Error('OTP verification failed')
+          return (await res.json()) as {
+            id: string
+            email?: string
+            phone?: string
+            user_metadata?: Record<string, unknown>
+          }
+        },
       }}
     />
   )

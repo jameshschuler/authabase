@@ -107,7 +107,7 @@ export function OptionsSection({ demoState, setDemoState }: DemoControlsStatePro
       <section>
         <p className={`${panelSectionTitleClass} mb-3`}>Copy And Validation</p>
         <div className="space-y-4">
-          <div className="flex flex-col gap-2 text-sm text-[var(--auth-fg)]">
+          <div className="flex flex-col gap-2 text-sm text-(--auth-fg)">
             <label htmlFor="minPasswordLength">Min Password Length</label>
             <div className="flex items-center gap-3">
               <input
@@ -122,7 +122,7 @@ export function OptionsSection({ demoState, setDemoState }: DemoControlsStatePro
                     minPasswordLength: Number(e.target.value),
                   }))
                 }
-                className="w-full accent-[var(--auth-primary)]"
+                className="w-full accent-(--auth-primary)"
               />
               <input
                 type="number"
@@ -137,12 +137,12 @@ export function OptionsSection({ demoState, setDemoState }: DemoControlsStatePro
                     minPasswordLength: Math.min(32, Math.max(4, value)),
                   }))
                 }}
-                className="w-16 rounded border border-[var(--auth-border)] bg-[var(--auth-surface)] px-2 py-1 text-xs text-[var(--auth-fg)]"
+                className="w-16 rounded border border-(--auth-border) bg-(--auth-surface) px-2 py-1 text-xs text-(--auth-fg)"
               />
             </div>
           </div>
 
-          <div className="flex flex-col gap-1 text-sm text-[var(--auth-fg)]">
+          <div className="flex flex-col gap-1 text-sm text-(--auth-fg)">
             <label htmlFor="passwordMismatchText">Password Mismatch Text</label>
             <input
               id="passwordMismatchText"
@@ -158,7 +158,7 @@ export function OptionsSection({ demoState, setDemoState }: DemoControlsStatePro
             />
           </div>
 
-          <div className="flex flex-col gap-1 text-sm text-[var(--auth-fg)]">
+          <div className="flex flex-col gap-1 text-sm text-(--auth-fg)">
             <label htmlFor="otpHintText">OTP Hint Text</label>
             <input
               id="otpHintText"
@@ -174,7 +174,7 @@ export function OptionsSection({ demoState, setDemoState }: DemoControlsStatePro
             />
           </div>
 
-          <div className="flex flex-col gap-1 text-sm text-[var(--auth-fg)]">
+          <div className="flex flex-col gap-1 text-sm text-(--auth-fg)">
             <label htmlFor="otpSendText">OTP Button Text</label>
             <input
               id="otpSendText"
@@ -195,7 +195,7 @@ export function OptionsSection({ demoState, setDemoState }: DemoControlsStatePro
       <div className="mt-3 flex gap-2">
         <button
           type="button"
-          className="rounded border border-[var(--auth-border)] bg-[var(--auth-surface)] px-3 py-1.5 text-xs font-medium text-[var(--auth-fg)] transition-colors hover:bg-[color-mix(in_srgb,var(--auth-surface)_80%,var(--auth-border))]"
+          className="rounded border border-(--auth-border) bg-(--auth-surface) px-3 py-1.5 text-xs font-medium text-(--auth-fg) transition-colors hover:bg-[color-mix(in_srgb,var(--auth-surface)_80%,var(--auth-border))]"
           onClick={() => setDemoState(createDefaultDemoState())}
         >
           Reset Defaults

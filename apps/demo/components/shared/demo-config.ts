@@ -34,6 +34,7 @@ export interface DemoState {
   otpApiUrl: string
   otpVerifyApiUrl: string
   currentUserApiUrl: string
+  logoutApiUrl: string
   enabledMethods: EnabledMethods
   minPasswordLength: number
   passwordMismatchText: string
@@ -163,6 +164,7 @@ export const demoEnvDefaults = {
   otpApiUrl: demoEnv.VITE_DEMO_OTP_API_URL ?? '',
   otpVerifyApiUrl: demoEnv.VITE_DEMO_OTP_VERIFY_API_URL ?? '',
   currentUserApiUrl: demoEnv.VITE_DEMO_CURRENT_USER_API_URL ?? '',
+  logoutApiUrl: demoEnv.VITE_DEMO_LOGOUT_API_URL ?? '',
 }
 export const defaultUseCookieSessionHydration = Boolean(demoEnvDefaults.currentUserApiUrl)
 
@@ -193,6 +195,7 @@ export function createDefaultDemoState(): DemoState {
     otpApiUrl: demoEnvDefaults.otpApiUrl,
     otpVerifyApiUrl: demoEnvDefaults.otpVerifyApiUrl,
     currentUserApiUrl: demoEnvDefaults.currentUserApiUrl,
+    logoutApiUrl: demoEnvDefaults.logoutApiUrl,
     enabledMethods: { ...defaultEnabledMethods },
     minPasswordLength: defaultDemoCopy.minPasswordLength,
     passwordMismatchText: defaultDemoCopy.passwordMismatchText,

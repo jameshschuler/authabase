@@ -18,8 +18,8 @@ export function DemoControls({
 }) {
   return (
     <div className={panelCardClass}>
-      <h2 className="mb-3 text-sm font-semibold text-[var(--auth-fg)]">Demo Controls</h2>
-      <p className="mb-3 text-xs text-[var(--auth-muted-fg)]">
+      <h2 className="mb-3 text-sm font-semibold text-(--auth-fg)">Demo Controls</h2>
+      <p className="mb-3 text-xs text-(--auth-muted-fg)">
         Configure auth methods, copy text, and validation behavior for the preview.
       </p>
 
