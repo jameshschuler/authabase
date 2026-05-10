@@ -14,6 +14,8 @@ export interface AuthConfig {
   supabaseKey: string
   redirectUrl?: string
   enabledMethods?: Partial<AuthEnabledMethods>
+  /** Optional user loader for cookie-based auth flows handled by your backend. */
+  getCurrentUser?: () => Promise<AuthUser | null> | AuthUser | null
   onAuthSuccess?: (user: AuthUser) => void
   onAuthError?: (error: Error) => void
 }
@@ -158,6 +160,12 @@ export interface OTPVerifyPayload {
   token: string
 }
 
+export interface OTPVerifiedPayload {
+  method: 'email' | 'phone'
+  email?: string
+  phone?: string
+}
+
 // ─── Form prop interfaces ─────────────────────────────────────────────────────
 
 export interface LoginFormProps extends FormLifecycleProps {
@@ -215,6 +223,8 @@ export interface SignupFormProps extends FormLifecycleProps, PasswordPolicyProps
 
 export interface OTPFormProps extends FormLifecycleProps {
   onSuccess?: (user: AuthUser) => void
+  /** Called after OTP verification succeeds, even when no user object is returned. */
+  onVerified?: (payload: OTPVerifiedPayload) => void
   onError?: (error: Error) => void
   /**
    * Optional callback to send/request OTP using your own backend.
@@ -224,7 +234,7 @@ export interface OTPFormProps extends FormLifecycleProps {
   /**
    * Optional callback to verify OTP using your own backend.
    * When provided, the component will not call `supabase.auth.verifyOtp`.
-   * Return a user to trigger `onSuccess`.
+   * Return a user to trigger `onSuccess`. If no user is returned, `onVerified` still fires.
    */
   onVerifyOTP?: (payload: OTPVerifyPayload) => Promise<AuthUser | void> | AuthUser | void
   phoneNumber?: string

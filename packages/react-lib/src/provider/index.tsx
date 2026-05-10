@@ -1,4 +1,12 @@
-import { createContext, useContext, useState, useEffect, type ReactNode, useMemo } from 'react'
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+  type ReactNode,
+  useMemo,
+} from 'react'
 import { createClient } from '@supabase/supabase-js'
 import type { AuthContextType, AuthConfig, AuthUser } from '../types'
 
@@ -38,8 +46,25 @@ export function AuthProvider({ config, children }: AuthProviderProps) {
     })
   }, [config.supabaseUrl, config.supabaseKey, hasValidConfig])
 
+  const applyUser = useCallback(
+    (nextUser: AuthUser | null) => {
+      setUser(nextUser)
+      if (nextUser) {
+        config.onAuthSuccess?.(nextUser)
+      }
+    },
+    [config.onAuthSuccess]
+  )
+
+  const loadBackendUser = useCallback(async () => {
+    if (!config.getCurrentUser) return null
+    const backendUser = await config.getCurrentUser()
+    applyUser(backendUser ?? null)
+    return backendUser ?? null
+  }, [applyUser, config.getCurrentUser])
+
   useEffect(() => {
-    if (!supabase) {
+    if (!supabase && !config.getCurrentUser) {
       // If no valid Supabase config, just finish loading without auth
       setIsLoading(false)
       setError(
@@ -53,11 +78,21 @@ export function AuthProvider({ config, children }: AuthProviderProps) {
     const initializeAuth = async () => {
       try {
         setIsLoading(true)
+
+        if (config.getCurrentUser) {
+          await loadBackendUser()
+          return
+        }
+
+        if (!supabase) {
+          return
+        }
+
         const {
           data: { session },
         } = await supabase.auth.getSession()
         if (session?.user) {
-          setUser({
+          applyUser({
             id: session.user.id,
             email: session.user.email,
             user_metadata: session.user.user_metadata,
@@ -74,29 +109,35 @@ export function AuthProvider({ config, children }: AuthProviderProps) {
 
     initializeAuth()
 
+    if (!supabase) {
+      return
+    }
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        setUser({
-          id: session.user.id,
-          email: session.user.email,
-          user_metadata: session.user.user_metadata,
-        })
-        config.onAuthSuccess?.({
+        applyUser({
           id: session.user.id,
           email: session.user.email,
           user_metadata: session.user.user_metadata,
         })
       } else {
-        setUser(null)
+        applyUser(null)
       }
     })
 
     return () => {
       subscription?.unsubscribe()
     }
-  }, [supabase, config])
+  }, [
+    supabase,
+    config.getCurrentUser,
+    config.onAuthError,
+    config.onAuthSuccess,
+    loadBackendUser,
+    applyUser,
+  ])
 
   const signOut = async () => {
     try {
@@ -113,12 +154,17 @@ export function AuthProvider({ config, children }: AuthProviderProps) {
 
   const refreshSession = async () => {
     try {
+      if (config.getCurrentUser) {
+        await loadBackendUser()
+        return
+      }
+
       if (!supabase) throw new Error('Supabase not configured')
       const {
         data: { session },
       } = await supabase.auth.refreshSession()
       if (session?.user) {
-        setUser({
+        applyUser({
           id: session.user.id,
           email: session.user.email,
           user_metadata: session.user.user_metadata,

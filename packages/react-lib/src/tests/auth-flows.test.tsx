@@ -20,6 +20,7 @@ type SupabaseAuthMock = {
 
 const mockedUseAuth = vi.mocked(useAuth)
 let authMock: SupabaseAuthMock
+let refreshSessionMock: ReturnType<typeof vi.fn>
 
 function createSupabaseAuthMock(): SupabaseAuthMock {
   return {
@@ -42,6 +43,7 @@ function createSupabaseAuthMock(): SupabaseAuthMock {
 
 beforeEach(() => {
   authMock = createSupabaseAuthMock()
+  refreshSessionMock = vi.fn().mockResolvedValue(undefined)
   mockedUseAuth.mockReturnValue({
     user: null,
     isLoading: false,
@@ -53,7 +55,7 @@ beforeEach(() => {
       otp: true,
     },
     signOut: vi.fn(),
-    refreshSession: vi.fn(),
+    refreshSession: refreshSessionMock,
     supabase: {
       auth: authMock,
     } as any,
@@ -163,5 +165,54 @@ describe('Auth Flows', () => {
         token: '123456',
       })
     })
+  })
+
+  it('calls onVerified when custom OTP verify returns no user', async () => {
+    const user = userEvent.setup()
+    const onRequestOTP = vi.fn().mockResolvedValue(undefined)
+    const onVerifyOTP = vi.fn().mockResolvedValue(undefined)
+    const onVerified = vi.fn()
+    const onSuccess = vi.fn()
+
+    render(
+      <OTPForm
+        otpInputMode="single"
+        onRequestOTP={onRequestOTP}
+        onVerifyOTP={onVerifyOTP}
+        onVerified={onVerified}
+        onSuccess={onSuccess}
+      />
+    )
+
+    await user.type(screen.getByLabelText('Email'), 'otp@example.com')
+    await user.click(screen.getByRole('button', { name: 'Send OTP' }))
+
+    await waitFor(() => {
+      expect(onRequestOTP).toHaveBeenCalledWith({
+        method: 'email',
+        email: 'otp@example.com',
+        phone: undefined,
+      })
+    })
+
+    await user.type(screen.getByRole('textbox', { name: 'Enter OTP Code' }), '123456')
+    await user.click(screen.getByRole('button', { name: 'Verify OTP' }))
+
+    await waitFor(() => {
+      expect(onVerifyOTP).toHaveBeenCalledWith({
+        method: 'email',
+        email: 'otp@example.com',
+        phone: undefined,
+        token: '123456',
+      })
+      expect(onVerified).toHaveBeenCalledWith({
+        method: 'email',
+        email: 'otp@example.com',
+        phone: undefined,
+      })
+      expect(refreshSessionMock).toHaveBeenCalledTimes(1)
+    })
+
+    expect(onSuccess).not.toHaveBeenCalled()
   })
 })

@@ -32,6 +32,7 @@ const DEFAULT_COPY = {
 
 export function OTPForm({
   onSuccess,
+  onVerified,
   onError,
   onRequestOTP,
   onVerifyOTP,
@@ -48,7 +49,7 @@ export function OTPForm({
   mapError,
   copy: copyProp,
 }: OTPFormProps) {
-  const { supabase } = useAuth()
+  const { supabase, refreshSession } = useAuth()
   const copy = { ...DEFAULT_COPY, ...copyProp }
   const [step, setStep] = useState<'contact' | 'otp'>('contact')
   const [deliveryMethod, setDeliveryMethod] = useState<'email' | 'phone'>(defaultMethod)
@@ -177,16 +178,27 @@ export function OTPForm({
     onSubmitStart?.()
     setIsLoading(true)
     try {
+      const verifiedPayload = {
+        method: deliveryMethod,
+        email: deliveryMethod === 'email' ? email : undefined,
+        phone: deliveryMethod === 'phone' ? normalizePhone(phone) : undefined,
+      } as const
+
       if (onVerifyOTP) {
         const user = await onVerifyOTP({
-          method: deliveryMethod,
-          email: deliveryMethod === 'email' ? email : undefined,
-          phone: deliveryMethod === 'phone' ? normalizePhone(phone) : undefined,
+          method: verifiedPayload.method,
+          email: verifiedPayload.email,
+          phone: verifiedPayload.phone,
           token: otp,
         })
+
+        // Ensure context user is hydrated for cookie-based auth flows.
+        await refreshSession()
+
         if (user) {
           onSuccess?.(user)
         }
+        onVerified?.(verifiedPayload)
       } else {
         if (!supabase) {
           throw new Error('Supabase client not initialized')
@@ -214,6 +226,7 @@ export function OTPForm({
           user_metadata: data.user?.user_metadata,
         }
         onSuccess?.(user)
+        onVerified?.(verifiedPayload)
       }
     } catch (error) {
       const err = error instanceof Error ? error : new Error('Failed to verify OTP')
@@ -346,9 +359,9 @@ export function OTPForm({
                 pattern="[0-9]*"
                 autoComplete="one-time-code"
               >
-                <InputOTPGroup>
+                <InputOTPGroup className="w-full">
                   {Array.from({ length: otpLength }).map((_, index) => (
-                    <InputOTPSlot key={index} index={index} />
+                    <InputOTPSlot key={index} index={index} className="w-auto flex-1" />
                   ))}
                 </InputOTPGroup>
               </InputOTP>

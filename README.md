@@ -127,6 +127,35 @@ function Profile() {
 }
 ```
 
+## Demo App
+
+The repository includes a live demo app at `apps/demo` that showcases the auth flows, theme controls, and cookie-backed OTP verification flow.
+
+### Run the demo
+
+```bash
+npm run dev --workspace @authabase/demo
+```
+
+### Configure demo URLs
+
+Copy `apps/demo/.env.example` to `apps/demo/.env` and set the three API URLs used by the demo controls:
+
+```bash
+VITE_DEMO_OTP_API_URL=
+VITE_DEMO_OTP_VERIFY_API_URL=
+VITE_DEMO_CURRENT_USER_API_URL=
+```
+
+The demo reads these values on startup, so restart the Vite dev server after changing them. The OTP request and verify calls are sent with `credentials: 'include'`, which lets your backend set an HttpOnly cookie during verification. If you enable the cookie-session flow in the demo, the app also calls the current-user endpoint to hydrate `useAuth().user`.
+
+### What the demo shows
+
+- Full auth flow tabs for login, signup, OTP, magic link, forgot password, and reset password
+- Live theme controls with multiple presets and editable `--auth-*` variables
+- Response panels for OTP request, OTP verify, and current-user calls
+- Cookie-session hydration with a configurable current-user endpoint
+
 ## Components
 
 ### LoginForm
