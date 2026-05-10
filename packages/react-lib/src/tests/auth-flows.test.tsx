@@ -55,7 +55,7 @@ beforeEach(() => {
       otp: true,
     },
     signOut: vi.fn(),
-    refreshSession: refreshSessionMock,
+    refreshSession: refreshSessionMock as unknown as () => Promise<void>,
     supabase: {
       auth: authMock,
     } as any,
