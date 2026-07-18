@@ -25,10 +25,20 @@ export function useOTPFlow({
   const enabledMethods = options?.enabledMethods
   const resendCountdownSeconds = options?.resendCountdownSeconds ?? 60
   const otpLength = options?.otpLength ?? 6
+  const isEmailEnabled = enabledMethods?.email ?? true
+  const isPhoneEnabled = enabledMethods?.phone ?? true
+  const availableMethods = [
+    ...(isEmailEnabled ? (['email'] as const) : []),
+    ...(isPhoneEnabled ? (['phone'] as const) : []),
+  ]
+  const resolveDeliveryMethod = (preferred: 'email' | 'phone') =>
+    availableMethods.includes(preferred) ? preferred : (availableMethods[0] ?? 'email')
 
   const customStrategy = strategy?.mode === 'custom' ? strategy : null
   const [step, setStep] = useState<'contact' | 'otp'>('contact')
-  const [deliveryMethod, setDeliveryMethod] = useState<'email' | 'phone'>(defaultMethod ?? 'email')
+  const [deliveryMethod, setDeliveryMethod] = useState<'email' | 'phone'>(() =>
+    resolveDeliveryMethod(defaultMethod)
+  )
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState(phoneNumber ?? '')
   const [otp, setOtp] = useState('')
@@ -40,18 +50,16 @@ export function useOTPFlow({
   const normalizePhone = (value: string) => value.replace(/[\s()-]/g, '')
   const isValidPhone = (value: string) => /^\+?[1-9]\d{7,14}$/.test(normalizePhone(value))
 
-  const isEmailEnabled = enabledMethods?.email ?? true
-  const isPhoneEnabled = enabledMethods?.phone ?? true
-  const availableMethods = [
-    ...(isEmailEnabled ? (['email'] as const) : []),
-    ...(isPhoneEnabled ? (['phone'] as const) : []),
-  ]
-
   useEffect(() => {
-    if (!availableMethods.includes(deliveryMethod)) {
-      setDeliveryMethod(availableMethods[0] ?? 'email')
+    const nextMethod = resolveDeliveryMethod(deliveryMethod)
+    if (nextMethod !== deliveryMethod) {
+      setDeliveryMethod(nextMethod)
     }
   }, [availableMethods, deliveryMethod])
+
+  useEffect(() => {
+    setGeneralError(null)
+  }, [deliveryMethod])
 
   const contactLabel = deliveryMethod === 'email' ? 'email' : 'phone number'
 

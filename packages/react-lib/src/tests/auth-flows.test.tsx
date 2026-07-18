@@ -176,6 +176,26 @@ describe('Auth Flows', () => {
     })
   })
 
+  it('validates phone in phone-only OTP mode', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <OTPForm
+        options={{
+          enabledMethods: { email: false, phone: true },
+        }}
+      />
+    )
+
+    expect(screen.queryByLabelText('Email')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Send OTP' }))
+
+    expect(screen.getByText('Phone number is required')).toBeInTheDocument()
+    expect(screen.queryByText('Email is required')).not.toBeInTheDocument()
+    expect(authMock.signInWithOtp).not.toHaveBeenCalled()
+  })
+
   it('calls onVerified when custom OTP verify returns no user', async () => {
     const user = userEvent.setup()
     const onRequestOTP = vi.fn().mockResolvedValue(undefined)
