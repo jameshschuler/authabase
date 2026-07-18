@@ -49,6 +49,15 @@ export function useOTPFlow({
 
   const normalizePhone = (value: string) => value.replace(/[\s()-]/g, '')
   const isValidPhone = (value: string) => /^\+?[1-9]\d{7,14}$/.test(normalizePhone(value))
+  const normalizeMethodError = (message: string) => {
+    if (deliveryMethod === 'phone' && /email is required/i.test(message)) {
+      return 'Phone number is required'
+    }
+    if (deliveryMethod === 'email' && /phone number is required/i.test(message)) {
+      return 'Email is required'
+    }
+    return message
+  }
 
   useEffect(() => {
     const nextMethod = resolveDeliveryMethod(deliveryMethod)
@@ -130,7 +139,7 @@ export function useOTPFlow({
     } catch (error) {
       const err =
         error instanceof Error ? error : new Error(`Failed to send OTP to ${contactLabel}`)
-      const message = mapError ? mapError(err) : err.message
+      const message = normalizeMethodError(mapError ? mapError(err) : err.message)
       setGeneralError(message)
       onError?.(err)
     } finally {
@@ -198,7 +207,7 @@ export function useOTPFlow({
       }
     } catch (error) {
       const err = error instanceof Error ? error : new Error('Failed to verify OTP')
-      const message = mapError ? mapError(err) : err.message
+      const message = normalizeMethodError(mapError ? mapError(err) : err.message)
       setGeneralError(message)
       onError?.(err)
     } finally {

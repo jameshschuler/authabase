@@ -183,6 +183,7 @@ describe('Auth Flows', () => {
       <OTPForm
         options={{
           enabledMethods: { email: false, phone: true },
+          otpInputMode: 'single',
         }}
       />
     )
@@ -194,6 +195,56 @@ describe('Auth Flows', () => {
     expect(screen.getByText('Phone number is required')).toBeInTheDocument()
     expect(screen.queryByText('Email is required')).not.toBeInTheDocument()
     expect(authMock.signInWithOtp).not.toHaveBeenCalled()
+  })
+
+  it('accepts plain digit phone format and submits OTP request', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <OTPForm
+        options={{
+          enabledMethods: { email: false, phone: true },
+          otpInputMode: 'single',
+        }}
+      />
+    )
+
+    await user.type(screen.getByLabelText('Phone number'), '5854652859')
+    await user.click(screen.getByRole('button', { name: 'Send OTP' }))
+
+    await waitFor(() => {
+      expect(authMock.signInWithOtp).toHaveBeenCalledWith({ phone: '5854652859' })
+    })
+    expect(
+      screen.queryByText('Enter a valid phone number in E.164 format, for example +14155552671')
+    ).not.toBeInTheDocument()
+  })
+
+  it('normalizes backend email-required error while in phone mode', async () => {
+    const user = userEvent.setup()
+    const onRequestOTP = vi.fn().mockRejectedValue(new Error('Email is required'))
+
+    render(
+      <OTPForm
+        options={{
+          enabledMethods: { email: true, phone: true },
+          defaultMethod: 'phone',
+        }}
+        strategy={{
+          mode: 'custom',
+          requestOTP: onRequestOTP,
+          verifyOTP: vi.fn(),
+        }}
+      />
+    )
+
+    await user.type(screen.getByLabelText('Phone number'), '+15854652859')
+    await user.click(screen.getByRole('button', { name: 'Send OTP' }))
+
+    await waitFor(() => {
+      expect(screen.getByText('Phone number is required')).toBeInTheDocument()
+    })
+    expect(screen.queryByText('Email is required')).not.toBeInTheDocument()
   })
 
   it('calls onVerified when custom OTP verify returns no user', async () => {
